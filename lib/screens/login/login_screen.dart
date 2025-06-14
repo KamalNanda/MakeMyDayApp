@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lottie/lottie.dart';
 
@@ -57,9 +58,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 30),
           
               // Welcome Title
-              const Text(
+               Text(
                 "Welcome to MakeMyDay",
-                style: TextStyle(
+                style: GoogleFonts.raleway(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -67,9 +68,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
+               Text(
                 "Your daily dose of joy & positivity 🌞",
-                style: TextStyle(fontSize: 16, color: Colors.white70),
+                style: GoogleFonts.raleway(fontSize: 16, color: Colors.white70),
                 textAlign: TextAlign.center,
               ),
           
@@ -87,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ElevatedButton.icon(
                 onPressed: signInWithGoogle,
                 icon: Image.asset('assets/google-logo.png', height: 24),
-                label: const Text("Sign in with Google"),
+                label:  Text("Sign in with Google", style: GoogleFonts.raleway(),),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black87,
                   backgroundColor: Colors.white,
@@ -105,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Terms
               Text(
                 "By continuing, you agree to our Terms of Service & Privacy Policy.",
-                style: TextStyle(
+                style: GoogleFonts.raleway(
                   fontSize: 12,
                   color: Colors.white38,
                 ),

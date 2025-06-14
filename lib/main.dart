@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:makemyday/screens/login/auth_wrapper.dart';
-import 'package:makemyday/screens/login/login_screen.dart';
-import 'package:makemyday/widgets/bottom_navigation/navigation.dart';
+import 'package:makemyday/screens/login/auth_wrapper.dart'; 
 import 'package:makemyday/screens/post/post_screen.dart';
 import 'package:makemyday/screens/search/search.dart';
 import 'package:media_kit/media_kit.dart';
@@ -53,7 +51,6 @@ class MyApp extends StatelessWidget {
 
         // Handle /search?q=query
         if (uri.path == '/search') {
-          final query = uri.queryParameters['q'];
           return MaterialPageRoute(
             builder: (context) => SearchScreen(),
             settings: settings,
