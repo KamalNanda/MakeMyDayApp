@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lottie/lottie.dart';
+import 'package:makemyday/utils/save_user_data_in_db.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -29,8 +30,12 @@ class _LoginScreenState extends State<LoginScreen> {
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
-      final user = userCredential.user;
-
+      final user = userCredential.user; 
+      var username = user?.displayName;
+      var email = user?.email;
+      var id = user?.uid;
+      save_user_data_in_db({"id":id, "username": username, "email": email});
+      
       if (user != null) {
         print('✅ Logged in: ${user.displayName}');
         // TODO: Navigate to Home screen
