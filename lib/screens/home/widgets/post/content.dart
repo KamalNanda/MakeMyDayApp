@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class Content extends StatefulWidget {
   PostModel post;
 
-  Content(this.post);
+  Content(this.post, {super.key});
 
   @override
   State<Content> createState() => _ContentState();
@@ -26,15 +26,16 @@ class _ContentState extends State<Content> {
     });
   }
 
-@override
-void didUpdateWidget(covariant Content oldWidget) {
-  super.didUpdateWidget(oldWidget);
+  @override
+  void didUpdateWidget(covariant Content oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-  if (oldWidget.post.id != widget.post.id) {
-    // Reset scroll to top when post changes
-    _scrollController.jumpTo(0);
+    if (oldWidget.post.id != widget.post.id) {
+      // Reset scroll to top when post changes
+      _scrollController.jumpTo(0);
+    }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -64,11 +65,11 @@ void didUpdateWidget(covariant Content oldWidget) {
             SizedBox(height: 8), // Spacing
             Tags(widget.post.tags),
             SizedBox(height: 8), // Spacing
-            if(widget.post.type == 'news')
-            Divider(
-              color: const Color.fromARGB(255, 226, 226, 226),
-              thickness: 2,
-            ),
+            if (widget.post.type == 'news')
+              Divider(
+                color: const Color.fromARGB(255, 226, 226, 226),
+                thickness: 2,
+              ),
             SizedBox(height: 8), // Spacing
             Text(
               widget.post.description,

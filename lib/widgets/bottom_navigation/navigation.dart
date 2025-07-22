@@ -7,7 +7,7 @@ import 'package:makemyday/screens/home/home.dart';
 import 'package:makemyday/screens/search/search.dart';
 
 class Navigation extends StatefulWidget {
-  const Navigation({Key? key}) : super(key: key);
+  const Navigation({super.key});
 
   @override
   _NavigationState createState() => _NavigationState();
@@ -67,22 +67,22 @@ class _NavigationState extends State<Navigation> {
           items: [
             SalomonBottomBarItem(
               icon: const Icon(Icons.search_rounded),
-              title:  Text("Search", style: GoogleFonts.raleway()),
+              title: Text("Search", style: GoogleFonts.raleway()),
               selectedColor: const Color(0xFF47CAD2),
             ),
             SalomonBottomBarItem(
               icon: const Icon(Icons.home_filled),
-              title:  Text("Home", style: GoogleFonts.raleway()),
+              title: Text("Home", style: GoogleFonts.raleway()),
               selectedColor: const Color(0xFF47CAD2),
             ),
             SalomonBottomBarItem(
               icon: const Icon(Icons.bookmark_rounded),
-              title:  Text("Bookmarks", style: GoogleFonts.raleway()),
+              title: Text("Bookmarks", style: GoogleFonts.raleway()),
               selectedColor: const Color(0xFF47CAD2),
             ),
             SalomonBottomBarItem(
               icon: const Icon(Icons.account_circle_rounded),
-              title:  Text("Profile", style: GoogleFonts.raleway()),
+              title: Text("Profile", style: GoogleFonts.raleway()),
               selectedColor: const Color(0xFF47CAD2),
             ),
           ],

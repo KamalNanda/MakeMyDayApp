@@ -11,7 +11,8 @@ import 'package:makemyday/utils/constants.dart' as globals;
 
 class NewsPost extends StatefulWidget {
   final PostModel post;
-  NewsPost(this.post);
+  final VoidCallback? onLiked;
+  const NewsPost(this.post, {this.onLiked, super.key});
 
   @override
   _NewsPostState createState() => _NewsPostState();
@@ -23,6 +24,7 @@ class _NewsPostState extends State<NewsPost> {
   @override
   void initState() {
     super.initState();
+    print('initState: ' + widget.post.toJson().toString());
     if (widget.post.type == 'video') {
       _initializePlayer();
     }
@@ -36,7 +38,7 @@ class _NewsPostState extends State<NewsPost> {
   @override
   void didUpdateWidget(covariant NewsPost oldWidget) {
     super.didUpdateWidget(oldWidget);
-
+    print('didUpdateWidget: ' + widget.post.toJson().toString());
     // If the post changes, dispose old player and load new one
     if (oldWidget.post.media_url != widget.post.media_url) {
       _disposePlayer();
@@ -69,7 +71,7 @@ class _NewsPostState extends State<NewsPost> {
         color: Color(0xFF20232B),
         child: Stack(
           children: [
-            Container(
+            SizedBox(
               height: MediaQuery.of(context).size.height,
               child: Column(
                 children: [
@@ -90,7 +92,7 @@ class _NewsPostState extends State<NewsPost> {
                       : 170 + globals.video_widget_height_constant,
               left: 0,
               right: 0,
-              child: Container(
+              child: SizedBox(
                 height: MediaQuery.of(context).size.height,
                 child: Content(widget.post),
               ),
@@ -101,7 +103,12 @@ class _NewsPostState extends State<NewsPost> {
                       ? 145
                       : 145 + globals.video_widget_height_constant,
               right: 80,
-              child: LikeButton(),
+              child: LikeButton(
+                postId: widget.post.id,
+                likeCount: int.tryParse(widget.post.like_count) ?? 0,
+                likedByYou: widget.post.liked_by_you ?? false,
+                onLiked: widget.onLiked,
+              ),
             ),
             Positioned(
               top:

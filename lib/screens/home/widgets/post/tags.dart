@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Tags extends StatelessWidget {
-  List _tags;
-  Tags(this._tags); 
+  final List _tags;
+  Tags(this._tags, {super.key});
   @override
   Widget build(BuildContext context) {
     return Wrap(
@@ -21,7 +21,7 @@ class Tags extends StatelessWidget {
 
 class Tag extends StatelessWidget {
   final String _tag;
-  Tag(this._tag);
+  const Tag(this._tag, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,21 +38,17 @@ class Tag extends StatelessWidget {
         ),
         borderRadius: BorderRadius.all(Radius.circular(6)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: Text(
           _tag,
-          style:  GoogleFonts.raleway(
+          style: GoogleFonts.raleway(
             color: Colors.white,
             fontSize: 13,
-            fontWeight: FontWeight.w600
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),

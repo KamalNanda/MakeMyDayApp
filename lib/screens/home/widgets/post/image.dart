@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // ignore: must_be_immutable
 class ImageWidget extends StatelessWidget {
   String media_url;
-  ImageWidget(this.media_url);
+  ImageWidget(this.media_url, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +12,9 @@ class ImageWidget extends StatelessWidget {
       child: Image.network(
         media_url,
         fit: BoxFit.cover,
-        width: double.infinity, 
+        width: double.infinity,
         height: 190,
       ),
     );
   }
 }
- 

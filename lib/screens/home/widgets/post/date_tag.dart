@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 class DateTag extends StatelessWidget {
   final String createdAt;
-  DateTag(this.createdAt); 
+  const DateTag(this.createdAt, {super.key});
 
   String formatDate(String dateString) {
     DateTime parsedDate = DateTime.parse(dateString);
@@ -31,14 +31,21 @@ class DateTag extends StatelessWidget {
         return "th";
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return InteractionButton(
       child: Container(
         padding: EdgeInsets.fromLTRB(12, 8, 12, 8),
-        child: Text(createdAt.indexOf(':') != -1 ? formatDate(createdAt) : createdAt, style: GoogleFonts.raleway(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+        child: Text(
+          createdAt.contains(':') ? formatDate(createdAt) : createdAt,
+          style: GoogleFonts.raleway(
+            fontSize: 16,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
-} 
- 
+}

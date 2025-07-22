@@ -10,7 +10,7 @@ class ShareButton extends StatefulWidget {
   final String title;
   final String previewImageUrl; // custom image passed as prop
 
-  ShareButton(this.id, this.title, this.previewImageUrl);
+  const ShareButton(this.id, this.title, this.previewImageUrl, {super.key});
 
   @override
   State<ShareButton> createState() => _ShareButtonState();

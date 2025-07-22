@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 // ignore: must_be_immutable
 class NewsTitle extends StatelessWidget {
-  String _newsTitle;
-  NewsTitle(this._newsTitle);
+  final String _newsTitle;
+  NewsTitle(this._newsTitle, {super.key});
   @override
   Widget build(BuildContext context) {
     return Text(
@@ -12,9 +12,9 @@ class NewsTitle extends StatelessWidget {
       style: GoogleFonts.raleway(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        // color: Colors.black,
 
-        color: Colors.white
+        // color: Colors.black,
+        color: Colors.white,
       ),
       overflow: TextOverflow.visible,
       maxLines: 10, //

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:makemyday/screens/login/auth_wrapper.dart'; 
+import 'package:makemyday/screens/login/auth_wrapper.dart';
 import 'package:makemyday/screens/post/post_screen.dart';
 import 'package:makemyday/screens/search/search.dart';
 import 'package:media_kit/media_kit.dart';
@@ -7,34 +7,33 @@ import 'package:flutter/services.dart'; //
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
-SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-  statusBarColor: Colors.transparent, // Or any color
-  statusBarIconBrightness: Brightness.dark, // Icons color
-));
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent, // Or any color
+      statusBarIconBrightness: Brightness.dark, // Icons color
+    ),
+  );
   // ✅ Enable system overlays (status bar, navigation bar)
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
- WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MakeMyDay',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
-      ),
-      home:  AuthWrapper(),
+      theme: ThemeData(primarySwatch: Colors.teal),
+      home: AuthWrapper(),
 
       // Named route handling
       onGenerateRoute: (RouteSettings settings) {

@@ -1,8 +1,7 @@
-
-import 'package:flutter/material.dart';  
+import 'package:flutter/material.dart';
 
 class BookmarksScreen extends StatefulWidget {
-  const BookmarksScreen({ Key? key }) : super(key: key);
+  const BookmarksScreen({super.key});
 
   @override
   _BookmarksScreenState createState() => _BookmarksScreenState();
@@ -11,8 +10,6 @@ class BookmarksScreen extends StatefulWidget {
 class _BookmarksScreenState extends State<BookmarksScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Text('Bookmarks'),
-    );
+    return Container(child: Text('Bookmarks'));
   }
 }

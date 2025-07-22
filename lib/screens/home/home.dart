@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:makemyday/screens/home/utils/post_model.dart';
 import 'package:makemyday/screens/home/widgets/news_post.dart';
 import 'package:makemyday/screens/loading/loading_screen.dart';
@@ -6,19 +7,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List _posts = [];
+  final List _posts = [];
   int post_index = 1;
   final CardSwiperController controller = CardSwiperController();
   void fetchData() async {
     print(post_index);
     ApiService apiService = ApiService();
     try {
-      var data = await apiService.getRequest("/mmd/v1/posts/fetch-posts");
+      var data = await apiService.getRequest(
+        "/mmd/v1/posts/fetch-posts?user_id=${FirebaseAuth.instance.currentUser?.uid}",
+      );
 
       setState(() {
         for (var post in data['data']) {
@@ -112,22 +117,19 @@ class _HomeScreenState extends State<HomeScreen> {
               )
               : SizedBox(),
       // backgroundColor: const Color.fromARGB(255, 211, 211, 211),
-        // backgroundColor: Color(0xFF20232B),
+      // backgroundColor: Color(0xFF20232B),
       backgroundColor: Colors.transparent,
-      body:
-          Container(
+      body: Container(
         decoration: const BoxDecoration(
           gradient: RadialGradient(
-            colors: [
-              Color.fromRGBO(73, 75, 76, 1),
-              Color(0xFF20232B)
-            ],
+            colors: [Color.fromRGBO(73, 75, 76, 1), Color(0xFF20232B)],
             stops: [0.0, 1.0],
             center: Alignment.bottomCenter,
             radius: 2,
           ),
         ),
-            child: _posts.isNotEmpty
+        child:
+            _posts.isNotEmpty
                 ? CardSwiper(
                   controller: controller,
                   numberOfCardsDisplayed: 1,
@@ -149,7 +151,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     return AnimatedOpacity(
                       duration: Duration(milliseconds: 300),
                       opacity:
-                          percentThresholdX.abs() > 0.1 ? 0.5 : 1, // Fade effect
+                          percentThresholdX.abs() > 0.1
+                              ? 0.5
+                              : 1, // Fade effect
                       child: Transform.scale(
                         scale:
                             percentThresholdX.abs() > 0.1
@@ -161,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 )
                 : Splash(),
-          ),
+      ),
     );
   }
 }

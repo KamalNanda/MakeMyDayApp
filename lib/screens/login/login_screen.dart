@@ -6,7 +6,7 @@ import 'package:lottie/lottie.dart';
 import 'package:makemyday/utils/save_user_data_in_db.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -27,15 +27,15 @@ class _LoginScreenState extends State<LoginScreen> {
         idToken: googleAuth.idToken,
       );
 
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
 
-      final user = userCredential.user; 
+      final user = userCredential.user;
       var username = user?.displayName;
       var email = user?.email;
       var id = user?.uid;
-      save_user_data_in_db({"id":id, "username": username, "email": email});
-      
+      save_user_data_in_db({"id": id, "username": username, "email": email});
+
       if (user != null) {
         print('✅ Logged in: ${user.displayName}');
         // TODO: Navigate to Home screen
@@ -56,14 +56,14 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-          
+
               // Logo
               Image.asset('assets/logo.png', height: 100),
-          
+
               const SizedBox(height: 30),
-          
+
               // Welcome Title
-               Text(
+              Text(
                 "Welcome to MakeMyDay",
                 style: GoogleFonts.raleway(
                   fontSize: 28,
@@ -73,27 +73,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-               Text(
+              Text(
                 "Your daily dose of joy & positivity 🌞",
                 style: GoogleFonts.raleway(fontSize: 16, color: Colors.white70),
                 textAlign: TextAlign.center,
               ),
-          
+
               const SizedBox(height: 30),
-          
+
               // Lottie animation
-              Lottie.asset(
-                'assets/motivation.json',
-                height: 200,
-              ),
-          
+              Lottie.asset('assets/motivation.json', height: 200),
+
               const SizedBox(height: 30),
-          
+
               // Google Sign In Button
               ElevatedButton.icon(
                 onPressed: signInWithGoogle,
                 icon: Image.asset('assets/google-logo.png', height: 24),
-                label:  Text("Sign in with Google", style: GoogleFonts.raleway(),),
+                label: Text(
+                  "Sign in with Google",
+                  style: GoogleFonts.raleway(),
+                ),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black87,
                   backgroundColor: Colors.white,
@@ -105,16 +105,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   elevation: 3,
                 ),
               ),
-          
+
               const SizedBox(height: 40),
-          
+
               // Terms
               Text(
                 "By continuing, you agree to our Terms of Service & Privacy Policy.",
-                style: GoogleFonts.raleway(
-                  fontSize: 12,
-                  color: Colors.white38,
-                ),
+                style: GoogleFonts.raleway(fontSize: 12, color: Colors.white38),
                 textAlign: TextAlign.center,
               ),
             ],

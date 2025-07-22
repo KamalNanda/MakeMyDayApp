@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:makemyday/screens/home/utils/post_model.dart';
 import 'package:makemyday/screens/home/widgets/news_post.dart';
@@ -7,27 +8,45 @@ import 'package:makemyday/widgets/bottom_navigation/navigation.dart';
 
 class PostScreen extends StatefulWidget {
   final String postId;
-  const PostScreen({required this.postId, Key? key}) : super(key: key);
+  const PostScreen({required this.postId, super.key});
 
   @override
   State<PostScreen> createState() => _PostScreenState();
 }
 
 class _PostScreenState extends State<PostScreen> {
-  List _posts = [];
+  final List _posts = [];
 
   void fetchData() async {
     ApiService apiService = ApiService();
     try {
       var data = await apiService.getRequest(
-        "/mmd/v1/posts/fetch-post?id=${widget.postId}",
+        "/mmd/v1/posts/fetch-post?id=${widget.postId}&user_id=${FirebaseAuth.instance.currentUser?.uid}",
       );
 
-      setState(() { 
-        _posts.add(data['data']);
-      });
+      if (data != null && data['status'] == true && data['data'] != null) {
+        if (data['data'] is List) {
+          setState(() {
+            for (var post in data['data']) {
+              _posts.add(PostModel.fromJson(post));
+            }
+          });
+        } else {
+          setState(() {
+            _posts.add(PostModel.fromJson(data['data']));
+          });
+        }
+      } else {
+        print(data?['message'] ?? 'Failed to fetch post');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data?['message'] ?? 'Failed to fetch post')),
+        );
+      }
     } catch (e) {
       print(e);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 

@@ -1,26 +1,31 @@
 import 'package:dio/dio.dart';
 
 class ApiService {
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: "https://makemydaybackend-production.up.railway.app",
-    // baseUrl: "http://192.168.1.20:3000",
-    connectTimeout: Duration(seconds: 10),
-    receiveTimeout: Duration(seconds: 10),
-    headers: {"Content-Type": "application/json"},
-  ));
+  final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: "https://makemydaybackend-production.up.railway.app",
+      // baseUrl: "http://192.168.1.20:3000",
+      connectTimeout: Duration(seconds: 10),
+      receiveTimeout: Duration(seconds: 10),
+      headers: {"Content-Type": "application/json"},
+    ),
+  );
 
   // GET Request
-  Future<dynamic> getRequest(String endpoint) async { 
+  Future<dynamic> getRequest(String endpoint) async {
     try {
       Response response = await _dio.get(endpoint);
       return response.data;
-    } catch (e) { 
+    } catch (e) {
       _handleError(e);
     }
   }
 
   // POST Request
-  Future<dynamic> postRequest(String endpoint, Map<String, dynamic> data) async {
+  Future<dynamic> postRequest(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
     try {
       Response response = await _dio.post(endpoint, data: data);
       return response.data;

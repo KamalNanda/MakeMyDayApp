@@ -6,6 +6,8 @@ import 'package:makemyday/screens/login/login_screen.dart';
 class ProfileScreen extends StatelessWidget {
   final User? user = FirebaseAuth.instance.currentUser;
 
+  ProfileScreen({super.key});
+
   void _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     Navigator.pushAndRemoveUntil(
@@ -37,7 +39,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Header 
+              // Header
               const SizedBox(height: 30),
 
               // Profile Card
@@ -76,7 +78,7 @@ class ProfileScreen extends StatelessWidget {
                           ).createShader(bounds),
                       child: Text(
                         user?.displayName ?? "Guest User",
-                        style:  GoogleFonts.raleway(
+                        style: GoogleFonts.raleway(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -86,7 +88,7 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       user?.email ?? "",
-                      style:  GoogleFonts.raleway(
+                      style: GoogleFonts.raleway(
                         fontSize: 14,
                         color: Colors.white70,
                       ),
@@ -103,7 +105,7 @@ class ProfileScreen extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => _logout(context),
                   icon: const Icon(Icons.logout, color: Color(0xFF47CAD2)),
-                  label:  Text(
+                  label: Text(
                     "Logout",
                     style: GoogleFonts.raleway(
                       color: Color(0xFF47CAD2),
