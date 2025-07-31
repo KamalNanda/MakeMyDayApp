@@ -64,10 +64,7 @@ class _PostScreenState extends State<PostScreen> {
           children: [
             // Main content
             SizedBox.expand(
-              child:
-                  _posts.isNotEmpty
-                      ? NewsPost(PostModel.fromJson(_posts[0]))
-                      : Splash(),
+              child: _posts.isNotEmpty ? NewsPost(_posts[0]) : Splash(),
             ),
 
             // Floating back button

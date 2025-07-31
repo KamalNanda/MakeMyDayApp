@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:makemyday/utils/apiService.dart';
+import 'package:makemyday/screens/home/utils/post_model.dart';
+import 'package:makemyday/screens/home/widgets/news_post.dart';
+import 'package:makemyday/screens/post/post_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -8,8 +13,491 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  List<Map<String, dynamic>> _tags = [];
+  List<PostModel> _posts = [];
+  String? _selectedTagId;
+  String? _selectedTagName;
+  bool _isLoadingTags = true;
+  bool _isLoadingPosts = false;
+  bool _hasError = false;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTags();
+  }
+
+  Future<void> _fetchTags() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoadingTags = true;
+      _hasError = false;
+    });
+
+    try {
+      ApiService apiService = ApiService();
+      final response = await apiService.getRequest("/mmd/v1/posts/fetch-tags");
+
+      if (mounted) {
+        setState(() {
+          _tags = List<Map<String, dynamic>>.from(response['data']);
+          _isLoadingTags = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString();
+          _isLoadingTags = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _fetchPostsByTag(String tagId, String tagName) async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoadingPosts = true;
+      _selectedTagId = tagId;
+      _selectedTagName = tagName;
+      _posts = [];
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid ?? '';
+
+      ApiService apiService = ApiService();
+      final response = await apiService.getRequest(
+        "/mmd/v1/posts/fetch-posts-by-tag?tag_id=$tagId&user_id=$userId",
+      );
+
+      if (mounted) {
+        setState(() {
+          _posts =
+              (response['data'] as List)
+                  .map((post) => PostModel.fromJson(post))
+                  .toList();
+          _isLoadingPosts = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString();
+          _isLoadingPosts = false;
+        });
+      }
+    }
+  }
+
+  void _navigateToPost(PostModel post) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PostScreen(postId: post.id)),
+    );
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectedTagId = null;
+      _selectedTagName = null;
+      _posts = [];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(child: Text('Search'));
+    return Scaffold(
+      backgroundColor: Color(0xFF20232B),
+      appBar: AppBar(
+        title: Text(
+          'Search',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Color(0xFF20232B),
+        elevation: 0,
+        actions: [
+          if (_selectedTagId != null)
+            IconButton(
+              icon: Icon(Icons.clear, color: Colors.white),
+              onPressed: _clearSelection,
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Tags Section
+          Container(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _selectedTagId != null
+                      ? 'Selected: $_selectedTagName'
+                      : 'Browse by Tags',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 12),
+                if (_isLoadingTags)
+                  Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                else if (_hasError && _tags.isEmpty)
+                  Center(
+                    child: Column(
+                      children: [
+                        Icon(Icons.error_outline, color: Colors.red, size: 48),
+                        SizedBox(height: 8),
+                        Text(
+                          'Failed to load tags',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: _fetchTags,
+                          child: Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  _buildTagsGrid(),
+              ],
+            ),
+          ),
+
+          // Posts Section
+          if (_selectedTagId != null) Expanded(child: _buildPostsSection()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagsGrid() {
+    return Container(
+      height: 36,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 4),
+        itemCount: _tags.length,
+        itemBuilder: (context, index) {
+          final tag = _tags[index];
+          final isSelected = tag['id'] == _selectedTagId;
+
+          return Container(
+            margin: EdgeInsets.symmetric(horizontal: 6),
+            child: InkWell(
+              onTap: () => _fetchPostsByTag(tag['id'], tag['tag']),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blue : Color(0xFF2A2D36),
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      isSelected
+                          ? Border.all(color: Colors.blue, width: 1.5)
+                          : Border.all(color: Colors.grey[600]!, width: 0.5),
+                  boxShadow:
+                      isSelected
+                          ? [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: Offset(0, 1),
+                            ),
+                          ]
+                          : null,
+                ),
+                child: Text(
+                  '#${tag['tag']}',
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.grey[300],
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPostsSection() {
+    if (_isLoadingPosts) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Loading posts...',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_hasError && _posts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, color: Colors.red, size: 64),
+            SizedBox(height: 16),
+            Text(
+              'Error loading posts',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              _errorMessage,
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed:
+                  () => _fetchPostsByTag(_selectedTagId!, _selectedTagName!),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_posts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, color: Colors.grey, size: 64),
+            SizedBox(height: 16),
+            Text(
+              'No posts found',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Try selecting a different tag',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => _fetchPostsByTag(_selectedTagId!, _selectedTagName!),
+      color: Colors.white,
+      backgroundColor: Color(0xFF20232B),
+      child: ListView.builder(
+        padding: EdgeInsets.all(16),
+        itemCount: _posts.length,
+        itemBuilder: (context, index) {
+          final post = _posts[index];
+          return Container(
+            margin: EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Color(0xFF2A2D36),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: InkWell(
+              onTap: () => _navigateToPost(post),
+              borderRadius: BorderRadius.circular(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Post media
+                  ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
+                    child: Container(
+                      height: 200,
+                      width: double.infinity,
+                      child:
+                          post.type == 'video'
+                              ? Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Image.network(
+                                    post.media_url,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: 200,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        color: Colors.grey[800],
+                                        child: Icon(
+                                          Icons.play_circle_outline,
+                                          color: Colors.white,
+                                          size: 48,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  Icon(
+                                    Icons.play_circle_outline,
+                                    color: Colors.white,
+                                    size: 48,
+                                  ),
+                                ],
+                              )
+                              : Image.network(
+                                post.media_url,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey[800],
+                                    child: Icon(
+                                      Icons.image,
+                                      color: Colors.white,
+                                      size: 48,
+                                    ),
+                                  );
+                                },
+                              ),
+                    ),
+                  ),
+
+                  // Post content
+                  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          post.description,
+                          style: TextStyle(
+                            color: Colors.grey[300],
+                            fontSize: 14,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 12),
+
+                        // Tags
+                        if (post.tags.isNotEmpty)
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children:
+                                post.tags.map<Widget>((tag) {
+                                  return Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '#$tag',
+                                      style: TextStyle(
+                                        color: Colors.blue[300],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+
+                        SizedBox(height: 12),
+
+                        // Post metadata
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              color:
+                                  post.liked_by_you
+                                      ? Colors.red
+                                      : Colors.grey[400],
+                              size: 16,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              '${post.like_count}',
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 12,
+                              ),
+                            ),
+                            Spacer(),
+                            Text(
+                              post.created_at,
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
