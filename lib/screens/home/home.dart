@@ -1,8 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:makemyday/screens/home/utils/post_model.dart';
 import 'package:makemyday/screens/home/widgets/news_post.dart';
-import 'package:makemyday/screens/loading/loading_screen.dart';
-import 'package:makemyday/utils/apiService.dart';
+import 'package:makemyday/utils/posts_state_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
@@ -15,90 +12,30 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List _posts = [];
-  int post_index = 1;
+  final PostsStateManager _postsManager = PostsStateManager();
   final CardSwiperController controller = CardSwiperController();
-  bool _isLoading = true;
-  bool _hasError = false;
-  String _errorMessage = '';
-  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _loadInitialPosts();
   }
 
-  Future<void> _fetchData() async {
+  Future<void> _loadInitialPosts() async {
     if (!mounted) return;
 
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
-
-    try {
-      ApiService apiService = ApiService();
-      var data = await apiService.getRequest(
-        "/mmd/v1/posts/fetch-posts?user_id=${FirebaseAuth.instance.currentUser?.uid}",
-      );
-
-      if (mounted) {
-        setState(() {
-          for (var post in data['data']) {
-            // Prevent duplicate entries
-            if (!_posts.any(
-              (existingPost) => existingPost['id'] == post['id'],
-            )) {
-              _posts.add(post);
-            }
-          }
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-          _errorMessage = e.toString();
-          _isLoading = false;
-        });
-      }
+    await _postsManager.loadInitialPosts();
+    if (mounted) {
+      setState(() {});
     }
   }
 
-  Future<void> _fetchMoreData() async {
-    if (!mounted || _isLoadingMore) return;
+  Future<void> _loadMorePosts() async {
+    if (!mounted) return;
 
-    setState(() {
-      _isLoadingMore = true;
-    });
-
-    try {
-      ApiService apiService = ApiService();
-      var data = await apiService.getRequest(
-        "/mmd/v1/posts/fetch-posts?user_id=${FirebaseAuth.instance.currentUser?.uid}",
-      );
-
-      if (mounted) {
-        setState(() {
-          for (var post in data['data']) {
-            // Prevent duplicate entries
-            if (!_posts.any(
-              (existingPost) => existingPost['id'] == post['id'],
-            )) {
-              _posts.add(post);
-            }
-          }
-          _isLoadingMore = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoadingMore = false;
-        });
-      }
+    await _postsManager.loadMorePosts();
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -114,20 +51,18 @@ class _HomeScreenState extends State<HomeScreen> {
       'Swiped card $previousIndex to ${direction.name}. Now card $currentIndex is on top',
     );
 
-    if (currentIndex != null && currentIndex >= _posts.length - 2) {
+    // Load more posts when approaching the end
+    if (currentIndex != null && _postsManager.shouldLoadMore(currentIndex)) {
       print('Loading more posts...');
-      _fetchMoreData();
+      _loadMorePosts();
     }
 
     return true;
   }
 
   void _retry() {
-    setState(() {
-      _posts.clear();
-      post_index = 1;
-    });
-    _fetchData();
+    _postsManager.clear();
+    _loadInitialPosts();
   }
 
   @override
@@ -150,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBody() {
-    if (_isLoading) {
+    if (_postsManager.isLoading) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -192,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    if (_hasError && _posts.isEmpty) {
+    if (_postsManager.hasError && _postsManager.posts.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -217,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 8),
             Text(
-              _errorMessage,
+              _postsManager.errorMessage,
               style: TextStyle(color: Colors.grey[400], fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -240,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    if (_posts.isEmpty) {
+    if (_postsManager.posts.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -287,70 +222,95 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    return Stack(
-      children: [
-        // Main Card Swiper
-        CardSwiper(
-          controller: controller,
-          numberOfCardsDisplayed: 1,
-          backCardOffset: const Offset(10, 10),
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-          scale: 0.9,
-          duration: const Duration(milliseconds: 500),
-          cardsCount: _posts.length,
-          onSwipe: _onSwipe,
-          cardBuilder: (context, index, percentThresholdX, percentThresholdY) {
-            return AnimatedOpacity(
-              duration: Duration(milliseconds: 300),
-              opacity: percentThresholdX.abs() > 0.1 ? 0.5 : 1,
-              child: Transform.scale(
-                scale: percentThresholdX.abs() > 0.1 ? 0.95 : 1,
-                child: NewsPost(PostModel.fromJson(_posts[index])),
-              ),
-            );
-          },
-        ),
-
-        // Loading indicator for more posts
-        if (_isLoadingMore)
-          Positioned(
-            bottom: 100,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(20),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _postsManager.refreshPosts();
+        if (mounted) setState(() {});
+      },
+      color: Colors.blue,
+      backgroundColor: Colors.white,
+      child: Stack(
+        children: [
+          // Main Card Swiper
+          CardSwiper(
+            controller: controller,
+            numberOfCardsDisplayed: 1,
+            backCardOffset: const Offset(10, 10),
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+            scale: 0.9,
+            duration: const Duration(milliseconds: 500),
+            cardsCount: _postsManager.posts.length,
+            onSwipe: _onSwipe,
+            cardBuilder: (
+              context,
+              index,
+              percentThresholdX,
+              percentThresholdY,
+            ) {
+              return AnimatedOpacity(
+                duration: Duration(milliseconds: 300),
+                opacity: percentThresholdX.abs() > 0.1 ? 0.5 : 1,
+                child: Transform.scale(
+                  scale: percentThresholdX.abs() > 0.1 ? 0.95 : 1,
+                  child: NewsPost(_postsManager.posts[index]),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 2,
+              );
+            },
+          ),
+
+          // Loading indicator for more posts
+          if (_postsManager.isLoadingMore)
+            Positioned(
+              bottom: 100,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                          strokeWidth: 2,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Loading more posts...',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ],
+                      SizedBox(width: 8),
+                      Text(
+                        'Loading more posts...',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                      if (_postsManager.pagination != null) ...[
+                        SizedBox(width: 8),
+                        Text(
+                          '(${_postsManager.currentPage}/${_postsManager.pagination!.totalPages})',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildFloatingActionButton() {
-    if (_posts.isEmpty) return SizedBox();
+    if (_postsManager.posts.isEmpty) return SizedBox();
 
     return Stack(
       children: [

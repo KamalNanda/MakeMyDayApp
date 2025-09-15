@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:makemyday/utils/apiService.dart';
+import 'package:makemyday/utils/posts_api_service.dart';
 import 'package:makemyday/screens/home/utils/post_model.dart';
-import 'package:makemyday/screens/home/widgets/news_post.dart';
 import 'package:makemyday/screens/post/post_screen.dart';
 
 class BookmarksScreen extends StatefulWidget {
@@ -13,24 +12,32 @@ class BookmarksScreen extends StatefulWidget {
 }
 
 class _BookmarksScreenState extends State<BookmarksScreen> {
+  final PostsApiService _apiService = PostsApiService();
+  final ScrollController _scrollController = ScrollController();
+
   List<PostModel> _likedPosts = [];
+  PaginationInfo? _pagination;
   bool _isLoading = true;
+  bool _isLoadingMore = false;
   bool _hasError = false;
   String _errorMessage = '';
+  int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
-    _fetchLikedPosts();
+    _loadInitialLikedPosts();
+    _scrollController.addListener(_onScroll);
   }
 
-  Future<void> _fetchLikedPosts() async {
-    if (!mounted) return;
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
+  Future<void> _loadInitialLikedPosts() async {
+    if (!mounted) return;
 
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -38,17 +45,17 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         throw Exception('User not authenticated');
       }
 
-      ApiService apiService = ApiService();
-      final response = await apiService.getRequest(
-        "/mmd/v1/posts/fetch-liked-posts?user_id=${user.uid}",
+      final response = await _apiService.fetchPosts(
+        page: 1,
+        limit: 20,
+        userId: user.uid,
       );
 
       if (mounted) {
         setState(() {
-          _likedPosts =
-              (response['data'] as List)
-                  .map((post) => PostModel.fromJson(post))
-                  .toList();
+          _likedPosts = response.posts;
+          _pagination = response.pagination;
+          _currentPage = 1;
           _isLoading = false;
         });
       }
@@ -63,9 +70,54 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
     }
   }
 
-  void _onPostLiked() {
-    // Refresh the list when a post is liked/unliked
-    _fetchLikedPosts();
+  Future<void> _loadMoreLikedPosts() async {
+    if (!mounted || _isLoadingMore || !(_pagination?.hasNextPage ?? false))
+      return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _apiService.fetchPosts(
+        page: _currentPage + 1,
+        limit: 20,
+        userId: user.uid,
+      );
+
+      if (mounted) {
+        setState(() {
+          _likedPosts.addAll(response.posts);
+          _pagination = response.pagination;
+          _currentPage = response.pagination.currentPage;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString();
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreLikedPosts();
+    }
+  }
+
+  Future<void> _refreshLikedPosts() async {
+    await _loadInitialLikedPosts();
   }
 
   void _navigateToPost(PostModel post) {
@@ -91,9 +143,19 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         backgroundColor: Color(0xFF20232B),
         elevation: 0,
         actions: [
+          if (_pagination != null && !_isLoading)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Center(
+                child: Text(
+                  '${_currentPage}/${_pagination!.totalPages}',
+                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                ),
+              ),
+            ),
           IconButton(
             icon: Icon(Icons.refresh, color: Colors.white),
-            onPressed: _fetchLikedPosts,
+            onPressed: _refreshLikedPosts,
           ),
         ],
       ),
@@ -143,7 +205,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _fetchLikedPosts,
+              onPressed: _refreshLikedPosts,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
@@ -190,13 +252,42 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: _fetchLikedPosts,
+      onRefresh: _refreshLikedPosts,
       color: Colors.white,
       backgroundColor: Color(0xFF20232B),
       child: ListView.builder(
+        controller: _scrollController,
         padding: EdgeInsets.all(16),
-        itemCount: _likedPosts.length,
+        itemCount: _likedPosts.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          // Show loading indicator at the end
+          if (index == _likedPosts.length) {
+            return Container(
+              padding: EdgeInsets.all(16),
+              child: Center(
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Loading more bookmarks...',
+                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                    ),
+                    if (_pagination != null) ...[
+                      SizedBox(height: 4),
+                      Text(
+                        '(${_currentPage}/${_pagination!.totalPages})',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 10),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }
+
           final post = _likedPosts[index];
           return Container(
             margin: EdgeInsets.only(bottom: 16),

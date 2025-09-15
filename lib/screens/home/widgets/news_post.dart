@@ -105,7 +105,7 @@ class _NewsPostState extends State<NewsPost> {
               right: 80,
               child: LikeButton(
                 postId: widget.post.id,
-                likeCount: int.tryParse(widget.post.like_count) ?? 0,
+                likeCount: widget.post.like_count,
                 likedByYou: widget.post.liked_by_you ?? false,
                 onLiked: widget.onLiked,
               ),
