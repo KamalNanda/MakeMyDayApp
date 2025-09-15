@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:makemyday/utils/apiService.dart';
+import 'package:makemyday/utils/posts_api_service.dart';
 import 'package:makemyday/screens/home/utils/post_model.dart';
-import 'package:makemyday/screens/home/widgets/news_post.dart';
 import 'package:makemyday/screens/post/post_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -13,19 +12,32 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  final PostsApiService _apiService = PostsApiService();
+  final ScrollController _scrollController = ScrollController();
+
   List<Map<String, dynamic>> _tags = [];
   List<PostModel> _posts = [];
+  PaginationInfo? _pagination;
   String? _selectedTagId;
   String? _selectedTagName;
   bool _isLoadingTags = true;
   bool _isLoadingPosts = false;
+  bool _isLoadingMore = false;
   bool _hasError = false;
   String _errorMessage = '';
+  int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
     _fetchTags();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchTags() async {
@@ -37,12 +49,11 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     try {
-      ApiService apiService = ApiService();
-      final response = await apiService.getRequest("/mmd/v1/posts/fetch-tags");
+      final tags = await _apiService.fetchTags();
 
       if (mounted) {
         setState(() {
-          _tags = List<Map<String, dynamic>>.from(response['data']);
+          _tags = tags;
           _isLoadingTags = false;
         });
       }
@@ -65,23 +76,26 @@ class _SearchScreenState extends State<SearchScreen> {
       _selectedTagId = tagId;
       _selectedTagName = tagName;
       _posts = [];
+      _pagination = null;
+      _currentPage = 1;
     });
 
     try {
       final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid ?? '';
+      final userId = user?.uid;
 
-      ApiService apiService = ApiService();
-      final response = await apiService.getRequest(
-        "/mmd/v1/posts/fetch-posts-by-tag?tag_id=$tagId&user_id=$userId",
+      final response = await _apiService.fetchPostsByTag(
+        tagId: tagId,
+        page: 1,
+        limit: 20,
+        userId: userId,
       );
 
       if (mounted) {
         setState(() {
-          _posts =
-              (response['data'] as List)
-                  .map((post) => PostModel.fromJson(post))
-                  .toList();
+          _posts = response.posts;
+          _pagination = response.pagination;
+          _currentPage = 1;
           _isLoadingPosts = false;
         });
       }
@@ -93,6 +107,51 @@ class _SearchScreenState extends State<SearchScreen> {
           _isLoadingPosts = false;
         });
       }
+    }
+  }
+
+  Future<void> _loadMorePosts() async {
+    if (!mounted || _isLoadingMore || !(_pagination?.hasNextPage ?? false))
+      return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
+
+      final response = await _apiService.fetchPostsByTag(
+        tagId: _selectedTagId!,
+        page: _currentPage + 1,
+        limit: 20,
+        userId: userId,
+      );
+
+      if (mounted) {
+        setState(() {
+          _posts.addAll(response.posts);
+          _pagination = response.pagination;
+          _currentPage = response.pagination.currentPage;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString();
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMorePosts();
     }
   }
 
@@ -108,6 +167,8 @@ class _SearchScreenState extends State<SearchScreen> {
       _selectedTagId = null;
       _selectedTagName = null;
       _posts = [];
+      _pagination = null;
+      _currentPage = 1;
     });
   }
 
@@ -127,6 +188,16 @@ class _SearchScreenState extends State<SearchScreen> {
         backgroundColor: Color(0xFF20232B),
         elevation: 0,
         actions: [
+          if (_pagination != null && !_isLoadingPosts)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Center(
+                child: Text(
+                  '${_currentPage}/${_pagination!.totalPages}',
+                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                ),
+              ),
+            ),
           if (_selectedTagId != null)
             IconButton(
               icon: Icon(Icons.clear, color: Colors.white),
@@ -327,9 +398,38 @@ class _SearchScreenState extends State<SearchScreen> {
       color: Colors.white,
       backgroundColor: Color(0xFF20232B),
       child: ListView.builder(
+        controller: _scrollController,
         padding: EdgeInsets.all(16),
-        itemCount: _posts.length,
+        itemCount: _posts.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          // Show loading indicator at the end
+          if (index == _posts.length) {
+            return Container(
+              padding: EdgeInsets.all(16),
+              child: Center(
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Loading more posts...',
+                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                    ),
+                    if (_pagination != null) ...[
+                      SizedBox(height: 4),
+                      Text(
+                        '(${_currentPage}/${_pagination!.totalPages})',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 10),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }
+
           final post = _posts[index];
           return Container(
             margin: EdgeInsets.only(bottom: 16),

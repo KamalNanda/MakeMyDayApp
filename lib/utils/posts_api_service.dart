@@ -120,6 +120,67 @@ class PostsApiService {
     return fetchPostsForCurrentUser(page: currentPage + 1, limit: limit);
   }
 
+  /// Fetch all available tags
+  Future<List<Map<String, dynamic>>> fetchTags() async {
+    try {
+      final response = await _dio.get('/mmd/v1/posts/fetch-tags');
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data['data']);
+      } else {
+        throw Exception('Failed to fetch tags: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  /// Fetch posts by tag with pagination support
+  /// [tagId] - Tag ID to filter posts
+  /// [page] - Page number (default: 1)
+  /// [limit] - Number of posts per page (default: 20, max: 100)
+  /// [userId] - User ID for personalized data (optional)
+  Future<PostsResponse> fetchPostsByTag({
+    required String tagId,
+    int page = 1,
+    int limit = 20,
+    String? userId,
+  }) async {
+    try {
+      // Ensure limit doesn't exceed maximum
+      limit = limit > 100 ? 100 : limit;
+
+      // Build query parameters
+      final queryParams = <String, dynamic>{
+        'tag_id': tagId,
+        'page': page,
+        'limit': limit,
+      };
+
+      // Add user ID if provided
+      if (userId != null && userId.isNotEmpty) {
+        queryParams['user_id'] = userId;
+      }
+
+      final response = await _dio.get(
+        '/mmd/v1/posts/fetch-posts-by-tag',
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        return PostsResponse.fromJson(response.data);
+      } else {
+        throw Exception('Failed to fetch posts by tag: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
   /// Like a post
   Future<bool> likePost(String postId) async {
     try {
