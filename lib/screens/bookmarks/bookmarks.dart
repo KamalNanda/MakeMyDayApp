@@ -45,11 +45,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         throw Exception('User not authenticated');
       }
 
-      final response = await _apiService.fetchPosts(
-        page: 1,
-        limit: 20,
-        userId: user.uid,
-      );
+      final response = await _apiService.fetchLikedPosts(page: 1, limit: 20);
 
       if (mounted) {
         setState(() {
@@ -84,10 +80,9 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         throw Exception('User not authenticated');
       }
 
-      final response = await _apiService.fetchPosts(
+      final response = await _apiService.fetchLikedPosts(
         page: _currentPage + 1,
         limit: 20,
-        userId: user.uid,
       );
 
       if (mounted) {

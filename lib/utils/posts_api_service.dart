@@ -223,6 +223,43 @@ class PostsApiService {
     }
   }
 
+  /// Fetch liked posts for the current user with pagination support
+  /// [page] - Page number (default: 1)
+  /// [limit] - Number of posts per page (default: 20, max: 100)
+  Future<PostsResponse> fetchLikedPosts({int page = 1, int limit = 20}) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Ensure limit doesn't exceed maximum
+      limit = limit > 100 ? 100 : limit;
+
+      // Build query parameters
+      final queryParams = <String, dynamic>{
+        'user_id': currentUser.uid,
+        'page': page,
+        'limit': limit,
+      };
+
+      final response = await _dio.get(
+        '/mmd/v1/posts/fetch-liked-posts',
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        return PostsResponse.fromJson(response.data);
+      } else {
+        throw Exception('Failed to fetch liked posts: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch liked posts: $e');
+    }
+  }
+
   /// Handle Dio errors
   Exception _handleDioError(DioException error) {
     switch (error.type) {
