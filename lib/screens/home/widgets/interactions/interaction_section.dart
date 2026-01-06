@@ -12,8 +12,7 @@ class InteractionSection extends StatelessWidget {
       bottom: 200,
       right: 10,
       child: Column(
-        children: [
-          LikeButton(),
+        children: [ 
           BookmarkButton(),
           // ShareButton(),
           // CommentButton(),
