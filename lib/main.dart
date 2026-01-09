@@ -6,6 +6,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:flutter/services.dart'; //
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:makemyday/utils/notificationService.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,7 @@ void main() async {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await NotificationService().initialize();
 
   runApp(MyApp());
 }

@@ -21,18 +21,18 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     if (user == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF20232B),
+        backgroundColor: const Color(0xFFf7f2ef),
         body: Center(
           child: Text(
             "No user logged in",
-            style: GoogleFonts.raleway(color: Colors.white),
+            style: GoogleFonts.raleway(color: Colors.black),
           ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF20232B),
+      backgroundColor: const Color(0xFFf7f2ef),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
@@ -52,7 +52,12 @@ class ProfileScreen extends StatelessWidget {
                   border: Border.all(color: Colors.white24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: const Color.fromARGB(
+                        255,
+                        139,
+                        138,
+                        138,
+                      ).withOpacity(0.15),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -81,7 +86,7 @@ class ProfileScreen extends StatelessWidget {
                         style: GoogleFonts.raleway(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                     ),
@@ -90,7 +95,7 @@ class ProfileScreen extends StatelessWidget {
                       user?.email ?? "",
                       style: GoogleFonts.raleway(
                         fontSize: 14,
-                        color: Colors.white70,
+                        color: Colors.black,
                       ),
                     ),
                   ],
@@ -104,23 +109,23 @@ class ProfileScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () => _logout(context),
-                  icon: const Icon(Icons.logout, color: Color(0xFF47CAD2)),
+                  icon: const Icon(Icons.logout, color: Colors.black),
                   label: Text(
                     "Logout",
                     style: GoogleFonts.raleway(
-                      color: Color(0xFF47CAD2),
+                      color: Colors.black54,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.08),
+                    backgroundColor: Colors.white.withOpacity(0.10),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: const BorderSide(
-                        color: Color(0xFF47CAD2),
-                        width: 1.2,
-                      ),
+                      // side: const BorderSide(
+                      //   color: Color.fromARGB(255, 0, 0, 0),
+                      //   width: 1.2,
+                      // ),
                     ),
                     elevation: 4,
                   ),

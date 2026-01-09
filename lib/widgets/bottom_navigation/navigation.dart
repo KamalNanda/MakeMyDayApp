@@ -32,27 +32,28 @@ class _NavigationState extends State<Navigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 32, 35, 43),
+      backgroundColor: Color(0xFFf7f2ef),
       body: SafeArea(child: _pages[_selectedPageIndex]['page']),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          gradient: const RadialGradient(
-            colors: [
-              Color.fromRGBO(73, 75, 76, 1),
-              Color.fromARGB(255, 32, 35, 43),
-            ],
-            stops: [0.0, 1.0],
-            center: Alignment.bottomCenter,
-            radius: 2,
-          ),
-          borderRadius: const BorderRadius.only(
+          // gradient: const RadialGradient(
+          //   colors: [
+          //     Color.fromRGBO(73, 75, 76, 1),
+          //     Color.fromARGB(255, 32, 35, 43),
+          //   ],
+          //   stops: [0.0, 1.0],
+          //   center: Alignment.bottomCenter,
+          //   radius: 2,
+          // ),
+          color: Color(0xFFf7f2ef),
+          borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
           ),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Colors.black54,
+              color: Colors.black.withOpacity(0.15),
               blurRadius: 10,
               offset: Offset(0, -2),
             ),

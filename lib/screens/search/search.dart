@@ -175,36 +175,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF20232B),
-      appBar: AppBar(
-        title: Text(
-          'Search',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Color(0xFF20232B),
-        elevation: 0,
-        actions: [
-          if (_pagination != null && !_isLoadingPosts)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Center(
-                child: Text(
-                  '${_currentPage}/${_pagination!.totalPages}',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                ),
-              ),
-            ),
-          if (_selectedTagId != null)
-            IconButton(
-              icon: Icon(Icons.clear, color: Colors.white),
-              onPressed: _clearSelection,
-            ),
-        ],
-      ),
+      backgroundColor: Color(0xFFf7f2ef),
       body: Column(
         children: [
           // Tags Section
@@ -216,9 +187,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 Text(
                   _selectedTagId != null
                       ? 'Selected: $_selectedTagName'
-                      : 'Browse by Tags',
+                      : 'Browse by topics',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -226,8 +197,35 @@ class _SearchScreenState extends State<SearchScreen> {
                 SizedBox(height: 12),
                 if (_isLoadingTags)
                   Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [Colors.blue, Colors.purple],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                              strokeWidth: 3,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Loading topics...',
+                          style: TextStyle(color: Colors.black, fontSize: 16),
+                        ),
+                      ],
                     ),
                   )
                 else if (_hasError && _tags.isEmpty)
@@ -238,7 +236,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         SizedBox(height: 8),
                         Text(
                           'Failed to load tags',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                          style: TextStyle(color: Colors.black, fontSize: 16),
                         ),
                         SizedBox(height: 8),
                         ElevatedButton(
@@ -280,12 +278,18 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.blue : Color(0xFF2A2D36),
+                  color:
+                      isSelected
+                          ? const Color.fromARGB(15, 33, 149, 243)
+                          : Color.fromARGB(255, 235, 230, 227),
                   borderRadius: BorderRadius.circular(12),
                   border:
                       isSelected
-                          ? Border.all(color: Colors.blue, width: 1.5)
-                          : Border.all(color: Colors.grey[600]!, width: 0.5),
+                          ? Border.all(
+                            color: const Color.fromARGB(136, 33, 149, 243),
+                            width: 1.5,
+                          )
+                          : Border.all(color: Color(0xFFf7f2ef), width: 0.5),
                   boxShadow:
                       isSelected
                           ? [
@@ -295,12 +299,23 @@ class _SearchScreenState extends State<SearchScreen> {
                               offset: Offset(0, 1),
                             ),
                           ]
-                          : null,
+                          : [
+                            BoxShadow(
+                              color: const Color.fromARGB(
+                                255,
+                                164,
+                                164,
+                                164,
+                              ).withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
                 ),
                 child: Text(
                   '#${tag['tag']}',
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.grey[300],
+                    color: isSelected ? Colors.black : Colors.black,
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
@@ -319,13 +334,28 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Colors.blue, Colors.purple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 3,
+                ),
+              ),
             ),
             SizedBox(height: 16),
             Text(
               'Loading posts...',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(color: Colors.black, fontSize: 16),
             ),
           ],
         ),
@@ -342,7 +372,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Text(
               'Error loading posts',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -359,7 +389,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   () => _fetchPostsByTag(_selectedTagId!, _selectedTagName!),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+                foregroundColor: Colors.black,
               ),
               child: Text('Retry'),
             ),
@@ -378,7 +408,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Text(
               'No posts found',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -395,8 +425,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return RefreshIndicator(
       onRefresh: () => _fetchPostsByTag(_selectedTagId!, _selectedTagName!),
-      color: Colors.white,
-      backgroundColor: Color(0xFF20232B),
+      color: Colors.black,
+      backgroundColor: Color(0xFFf7f2ef),
       child: ListView.builder(
         controller: _scrollController,
         padding: EdgeInsets.all(16),
@@ -409,8 +439,25 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Center(
                 child: Column(
                   children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Colors.blue, Colors.purple],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                          strokeWidth: 3,
+                        ),
+                      ),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -435,7 +482,7 @@ class _SearchScreenState extends State<SearchScreen> {
             margin: EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Color(0xFF2A2D36),
+              color: Color(0xFFf7f2ef),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
@@ -473,7 +520,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         color: Colors.grey[800],
                                         child: Icon(
                                           Icons.play_circle_outline,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           size: 48,
                                         ),
                                       );
@@ -481,7 +528,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   ),
                                   Icon(
                                     Icons.play_circle_outline,
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     size: 48,
                                   ),
                                 ],
@@ -494,7 +541,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     color: Colors.grey[800],
                                     child: Icon(
                                       Icons.image,
-                                      color: Colors.white,
+                                      color: Colors.black,
                                       size: 48,
                                     ),
                                   );
@@ -512,7 +559,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         Text(
                           post.title,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.black,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -522,10 +569,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         SizedBox(height: 8),
                         Text(
                           post.description,
-                          style: TextStyle(
-                            color: Colors.grey[300],
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.black54, fontSize: 14),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -544,13 +588,24 @@ class _SearchScreenState extends State<SearchScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(12),
+                                      color: Color(0xFFf7f2ef),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.1),
+                                        width: 1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.15),
+                                          blurRadius: 0.5,
+                                          offset: Offset(0.5, 0.5),
+                                        ),
+                                      ],
                                     ),
                                     child: Text(
                                       '#$tag',
                                       style: TextStyle(
-                                        color: Colors.blue[300],
+                                        color: Colors.black54,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -583,7 +638,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             Text(
                               post.created_at,
                               style: TextStyle(
-                                color: Colors.grey[400],
+                                color: Colors.black54,
                                 fontSize: 12,
                               ),
                             ),

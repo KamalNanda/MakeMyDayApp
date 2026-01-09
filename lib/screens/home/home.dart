@@ -70,14 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            colors: [Color.fromRGBO(73, 75, 76, 1), Color(0xFF20232B)],
-            stops: [0.0, 1.0],
-            center: Alignment.bottomCenter,
-            radius: 2,
-          ),
-        ),
+        decoration: const BoxDecoration(color: Color(0xFFF9F7F4)),
         child: _buildBody(),
       ),
       floatingActionButton: _buildFloatingActionButton(),
@@ -112,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'Loading amazing content...',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
               ),
@@ -145,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'Oops! Something went wrong',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -162,8 +155,8 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.refresh),
               label: Text('Try Again'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+                backgroundColor: Colors.white70,
+                foregroundColor: Colors.black,
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -193,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'No posts available',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -210,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
               label: Text('Refresh'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+                foregroundColor: Colors.black,
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -228,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (mounted) setState(() {});
       },
       color: Colors.blue,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       child: Stack(
         children: [
           // Main Card Swiper
@@ -279,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 16,
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
+                            Colors.black,
                           ),
                           strokeWidth: 2,
                         ),
@@ -287,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(width: 8),
                       Text(
                         'Loading more posts...',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        style: TextStyle(color: Colors.black, fontSize: 12),
                       ),
                       if (_postsManager.pagination != null) ...[
                         SizedBox(width: 8),

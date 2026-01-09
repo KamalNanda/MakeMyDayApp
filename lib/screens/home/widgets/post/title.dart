@@ -23,7 +23,7 @@ class NewsTitle extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 26,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: Colors.black,
           height: 1.3,
           letterSpacing: -0.5,
         ),

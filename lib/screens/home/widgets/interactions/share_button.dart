@@ -51,7 +51,7 @@ class _ShareButtonState extends State<ShareButton> {
             child: IconButton(
               icon: Icon(
                 Icons.share,
-                color: Colors.white,
+                color: Colors.black54,
                 size: 24.0,
 
                 semanticLabel: 'Share this post',

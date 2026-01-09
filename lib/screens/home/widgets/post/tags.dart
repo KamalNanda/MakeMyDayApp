@@ -69,14 +69,15 @@ class _TagState extends State<Tag> with SingleTickerProviderStateMixin {
             opacity: _fadeAnimation.value,
             child: Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color.fromRGBO(73, 75, 76, 0.9),
-                    Color.fromARGB(255, 54, 56, 67),
-                  ],
-                ),
+                // gradient: LinearGradient(
+                //   begin: Alignment.topLeft,
+                //   end: Alignment.bottomRight,
+                //   colors: [
+                //     Color.fromRGBO(73, 75, 76, 0.9),
+                //     Color.fromARGB(255, 54, 56, 67),
+                //   ],
+                // ),
+                color: Color(0xFFf7f2ef),
                 borderRadius: BorderRadius.all(Radius.circular(12)),
                 border: Border.all(
                   color: Colors.white.withOpacity(0.1),
@@ -84,14 +85,9 @@ class _TagState extends State<Tag> with SingleTickerProviderStateMixin {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.05),
-                    blurRadius: 1,
-                    offset: Offset(0, 1),
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 0.5,
+                    offset: Offset(0.5, 0.5),
                   ),
                 ],
               ),
@@ -99,19 +95,19 @@ class _TagState extends State<Tag> with SingleTickerProviderStateMixin {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  SizedBox(width: 8),
+                  // Container(
+                  //   width: 6,
+                  //   height: 6,
+                  //   decoration: BoxDecoration(
+                  //     color: Colors.blue,
+                  //     shape: BoxShape.circle,
+                  //   ),
+                  // ),
+                  // SizedBox(width: 8),
                   Text(
                     widget._tag,
                     style: GoogleFonts.inter(
-                      color: Colors.white,
+                      color: Color(0xff6B5B4A),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.2,

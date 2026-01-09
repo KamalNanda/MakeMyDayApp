@@ -125,17 +125,17 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF20232B),
+      backgroundColor: Color(0xFFf7f2ef),
       appBar: AppBar(
         title: Text(
           'Bookmarks',
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Color(0xFF20232B),
+        backgroundColor: Color(0xFFf7f2ef),
         elevation: 0,
         actions: [
           if (_pagination != null && !_isLoading)
@@ -144,12 +144,12 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               child: Center(
                 child: Text(
                   '${_currentPage}/${_pagination!.totalPages}',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                  style: TextStyle(color: Colors.black54, fontSize: 12),
                 ),
               ),
             ),
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: Colors.black),
             onPressed: _refreshLikedPosts,
           ),
         ],
@@ -164,13 +164,28 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Colors.blue, Colors.purple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 3,
+                ),
+              ),
             ),
             SizedBox(height: 16),
             Text(
               'Loading your bookmarks...',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(color: Colors.black, fontSize: 16),
             ),
           ],
         ),
@@ -187,7 +202,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
             Text(
               'Error loading bookmarks',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -202,8 +217,8 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
             ElevatedButton(
               onPressed: _refreshLikedPosts,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+                backgroundColor: Colors.white70,
+                foregroundColor: Colors.black,
               ),
               child: Text('Retry'),
             ),
@@ -222,7 +237,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
             Text(
               'No bookmarks yet',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -236,7 +251,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
             Text(
               'Swipe right on posts to like them!',
               style: TextStyle(
-                color: Colors.grey[600],
+                color: Colors.black54,
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
               ),
@@ -248,8 +263,8 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
 
     return RefreshIndicator(
       onRefresh: _refreshLikedPosts,
-      color: Colors.white,
-      backgroundColor: Color(0xFF20232B),
+      color: Colors.black,
+      backgroundColor: Color(0xFFf7f2ef),
       child: ListView.builder(
         controller: _scrollController,
         padding: EdgeInsets.all(16),
@@ -262,19 +277,36 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               child: Center(
                 child: Column(
                   children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Colors.blue, Colors.purple],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                          strokeWidth: 3,
+                        ),
+                      ),
                     ),
                     SizedBox(height: 8),
                     Text(
                       'Loading more bookmarks...',
-                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                      style: TextStyle(color: Colors.black54, fontSize: 12),
                     ),
                     if (_pagination != null) ...[
                       SizedBox(height: 4),
                       Text(
                         '(${_currentPage}/${_pagination!.totalPages})',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 10),
+                        style: TextStyle(color: Colors.black54, fontSize: 10),
                       ),
                     ],
                   ],
@@ -288,7 +320,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
             margin: EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Color(0xFF2A2D36),
+              color: Color(0xFFf7f2ef),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
@@ -323,10 +355,10 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                                     height: 200,
                                     errorBuilder: (context, error, stackTrace) {
                                       return Container(
-                                        color: Colors.grey[800],
+                                        color: Colors.black54,
                                         child: Icon(
                                           Icons.play_circle_outline,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           size: 48,
                                         ),
                                       );
@@ -334,7 +366,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                                   ),
                                   Icon(
                                     Icons.play_circle_outline,
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     size: 48,
                                   ),
                                 ],
@@ -344,10 +376,10 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    color: Colors.grey[800],
+                                    color: Colors.black54,
                                     child: Icon(
                                       Icons.image,
-                                      color: Colors.white,
+                                      color: Colors.black,
                                       size: 48,
                                     ),
                                   );
@@ -365,7 +397,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                         Text(
                           post.title,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.black,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -375,10 +407,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                         SizedBox(height: 8),
                         Text(
                           post.description,
-                          style: TextStyle(
-                            color: Colors.grey[300],
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.black54, fontSize: 14),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -397,13 +426,24 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(12),
+                                      color: Color(0xFFf7f2ef),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.1),
+                                        width: 1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.15),
+                                          blurRadius: 0.5,
+                                          offset: Offset(0.5, 0.5),
+                                        ),
+                                      ],
                                     ),
                                     child: Text(
                                       '#$tag',
                                       style: TextStyle(
-                                        color: Colors.blue[300],
+                                        color: Colors.black54,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -416,12 +456,19 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                         // Post metadata
                         Row(
                           children: [
-                            Icon(Icons.favorite, color: Colors.red, size: 16),
+                            Icon(
+                              Icons.favorite,
+                              color:
+                                  post.liked_by_you
+                                      ? Colors.red
+                                      : Colors.black54,
+                              size: 16,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               '${post.like_count}',
                               style: TextStyle(
-                                color: Colors.grey[400],
+                                color: Colors.black54,
                                 fontSize: 12,
                               ),
                             ),
@@ -429,7 +476,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                             Text(
                               post.created_at,
                               style: TextStyle(
-                                color: Colors.grey[400],
+                                color: Colors.black54,
                                 fontSize: 12,
                               ),
                             ),

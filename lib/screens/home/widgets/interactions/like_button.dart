@@ -92,14 +92,14 @@ class _LikeButtonState extends State<LikeButton> {
                 '$_likeCount',
                 style: GoogleFonts.raleway(
                   fontSize: 16,
-                  color: Colors.white,
+                  color: Colors.black54,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               SizedBox(width: 5),
               Icon(
                 _likedByYou ? Icons.favorite : Icons.favorite_outline_outlined,
-                color: _likedByYou ? Colors.redAccent : Colors.white,
+                color: _likedByYou ? Colors.redAccent : Color(0xff6B5B4A),
                 size: 24.0,
                 semanticLabel: 'Like',
               ),

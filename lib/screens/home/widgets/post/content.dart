@@ -41,7 +41,7 @@ class _ContentState extends State<Content> {
     return Container(
       decoration: BoxDecoration(
         // color: Colors.white,
-        color: Color(0xFF20232B),
+        color: Color(0xFFF9F7F4),
         borderRadius: BorderRadius.circular(16), // Rounded corners
         boxShadow: [
           BoxShadow(
@@ -73,7 +73,7 @@ class _ContentState extends State<Content> {
             SizedBox(height: 8), // Spacing
             Text(
               widget.post.description,
-              style: GoogleFonts.raleway(fontSize: 16, color: Colors.white),
+              style: GoogleFonts.raleway(fontSize: 16, color: Colors.black),
             ),
             SizedBox(height: 320),
           ],

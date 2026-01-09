@@ -41,7 +41,7 @@ class DateTag extends StatelessWidget {
           createdAt.contains(':') ? formatDate(createdAt) : createdAt,
           style: GoogleFonts.raleway(
             fontSize: 16,
-            color: Colors.white,
+            color: Colors.black54,
             fontWeight: FontWeight.bold,
           ),
         ),

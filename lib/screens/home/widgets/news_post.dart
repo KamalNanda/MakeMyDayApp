@@ -68,7 +68,7 @@ class _NewsPostState extends State<NewsPost> {
       ),
       child: Container(
         padding: EdgeInsets.zero,
-        color: Color(0xFF20232B),
+        color: Color(0xFFF9F7F4),
         child: Stack(
           children: [
             SizedBox(
