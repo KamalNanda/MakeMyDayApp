@@ -17,8 +17,11 @@ class ShareButton extends StatefulWidget {
 }
 
 class _ShareButtonState extends State<ShareButton> {
+  final GlobalKey _shareButtonKey = GlobalKey();
+
   Future<void> _sharePostWithImage() async {
     try {
+      // Download the image
       final response = await http.get(Uri.parse(widget.previewImageUrl));
       final bytes = response.bodyBytes;
 
@@ -28,11 +31,29 @@ class _ShareButtonState extends State<ShareButton> {
       ).writeAsBytes(bytes);
 
       final url = 'https://makemydaynow.netlify.app/post/${widget.id}';
+      final shareText = '${widget.title}\n\n$url';
 
+      // Get the render box to pass the correct position to the iOS share sheet
+      final RenderBox? renderBox = _shareButtonKey.currentContext?.findRenderObject() as RenderBox?;
+      final Offset? position = renderBox?.localToGlobal(Offset.zero);
+      final Size? size = renderBox?.size;
+
+      Rect? sharePositionOrigin;
+      if (position != null && size != null) {
+        sharePositionOrigin = Rect.fromLTWH(
+          position.dx,
+          position.dy,
+          size.width,
+          size.height,
+        );
+      }
+
+      // Share both image and text with clickable link
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: '${widget.title}\n\nRead it here: $url',
+        text: shareText,
         subject: widget.title,
+        sharePositionOrigin: sharePositionOrigin,
       );
     } catch (e) {
       print('Error sharing post: $e');
@@ -49,6 +70,7 @@ class _ShareButtonState extends State<ShareButton> {
           width: 40,
           child: Center(
             child: IconButton(
+              key: _shareButtonKey,
               icon: Icon(
                 Icons.share,
                 color: Colors.black54,

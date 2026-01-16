@@ -13,12 +13,25 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
 
   Future<void> signInWithGoogle() async {
     try {
+      // Show loading indicator
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) => const Center(child: CircularProgressIndicator()),
+        );
+      }
+
       final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
+      if (googleUser == null) {
+        if (mounted) Navigator.of(context).pop(); // Close loading dialog
+        return;
+      }
 
       final googleAuth = await googleUser.authentication;
 
@@ -31,16 +44,42 @@ class _LoginScreenState extends State<LoginScreen> {
           .signInWithCredential(credential);
 
       final user = userCredential.user;
-      var username = user?.displayName;
-      var email = user?.email;
-      var id = user?.uid;
-      save_user_data_in_db({"id": id, "username": username, "email": email});
 
       if (user != null) {
         print('✅ Logged in: ${user.displayName}');
-        // TODO: Navigate to Home screen
+
+        // Save user data to database (don't await to avoid blocking)
+        var username = user.displayName;
+        var email = user.email;
+        var id = user.uid;
+
+        // Save user data in background - don't block on this
+        save_user_data_in_db({
+          "id": id,
+          "username": username,
+          "email": email,
+        }).catchError((error) {
+          print('Failed to save user data: $error');
+          // Continue anyway - user is already logged in
+        });
+      }
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
       }
     } catch (e) {
+      // Close loading dialog if still open
+      if (mounted) {
+        Navigator.of(context).pop();
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error during sign-in: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       print('❌ Error during sign-in: $e');
     }
   }

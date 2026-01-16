@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '874148686673',
     projectId: 'make-my-day-now',
     storageBucket: 'make-my-day-now.firebasestorage.app',
-    iosBundleId: 'com.example.makemyday',
+    iosBundleId: 'com.makemyday.makemyday',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -72,7 +72,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '874148686673',
     projectId: 'make-my-day-now',
     storageBucket: 'make-my-day-now.firebasestorage.app',
-    iosBundleId: 'com.example.makemyday',
+    iosBundleId: 'com.makemyday.makemyday',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

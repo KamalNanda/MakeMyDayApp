@@ -14,6 +14,7 @@ class Tags extends StatelessWidget {
       runSpacing: 8.0, // Vertical spacing
       children:
           _tags.map((tag) {
+            if(tag.trim().isEmpty) return SizedBox.shrink();
             return Tag(tag);
           }).toList(),
     );

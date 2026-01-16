@@ -63,6 +63,7 @@ class _ContentState extends State<Content> {
             // SizedBox(height: 20,),
             NewsTitle(widget.post.title),
             SizedBox(height: 8), // Spacing
+            if(widget.post.tags.isNotEmpty)
             Tags(widget.post.tags),
             SizedBox(height: 8), // Spacing
             if (widget.post.type == 'news')
