@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:makemyday/screens/login/auth_wrapper.dart';
 import 'package:makemyday/screens/post/post_screen.dart';
 import 'package:makemyday/screens/search/search.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:app_links/app_links.dart';
 import 'firebase_options.dart';
@@ -27,17 +26,7 @@ void main() async {
   };
 
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize MediaKit with error handling
-  try {
-    MediaKit.ensureInitialized();
-    print('✅ MediaKit initialized successfully');
-  } catch (e, stackTrace) {
-    print('⚠️ Warning: MediaKit initialization failed: $e');
-    print('Stack trace: $stackTrace');
-    // Continue anyway - MediaKit might not be critical for app startup
-  }
-  
+
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
       statusBarColor: Colors.transparent, // Or any color
@@ -46,10 +35,12 @@ void main() async {
   );
   // ✅ Enable system overlays (status bar, navigation bar)
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  
+
   // Initialize Firebase with error handling
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     print('✅ Firebase initialized successfully');
   } catch (e, stackTrace) {
     print('❌ Firebase initialization failed: $e');
@@ -58,7 +49,7 @@ void main() async {
     runApp(ErrorApp(error: e.toString()));
     return;
   }
-  
+
   // await NotificationService().initialize();
 
   runApp(const MyApp());
@@ -135,17 +126,19 @@ class _MyAppState extends State<MyApp> {
     );
 
     // Check for initial link when app is launched from deep link (cold start)
-    appLinks.allStringLinkStream.first.then((String? link) {
-      if (link != null) {
-        print('🔗 Initial deep link (cold start): $link');
-        final Uri uri = Uri.parse(link);
-        print('🔗 Parsed URI: $uri');
-        print('🔗 Path segments: ${uri.pathSegments}');
-        _handleDeepLink(uri);
-      }
-    }).catchError((e) {
-      print('⚠️ Error getting initial link: $e');
-    });
+    appLinks.allStringLinkStream.first
+        .then((String? link) {
+          if (link != null) {
+            print('🔗 Initial deep link (cold start): $link');
+            final Uri uri = Uri.parse(link);
+            print('🔗 Parsed URI: $uri');
+            print('🔗 Path segments: ${uri.pathSegments}');
+            _handleDeepLink(uri);
+          }
+        })
+        .catchError((e) {
+          print('⚠️ Error getting initial link: $e');
+        });
   }
 
   void _handleDeepLink(Uri uri) {
@@ -163,7 +156,7 @@ class _MyAppState extends State<MyApp> {
       // When using custom scheme, "post" becomes the host
       print('🔍 Checking if scheme is makemyday: ${uri.scheme == 'makemyday'}');
       print('🔍 Checking if host is post: ${uri.host == 'post'}');
-      
+
       if (uri.scheme == 'makemyday' && uri.host == 'post') {
         print('🔍 Matched custom scheme format');
         if (uri.pathSegments.isNotEmpty) {
@@ -190,7 +183,7 @@ class _MyAppState extends State<MyApp> {
       if (postId != null && postId.isNotEmpty) {
         print('✅ Got post ID: $postId');
         print('📲 Will push route: /post/$postId');
-        
+
         // Use addPostFrameCallback to ensure navigation happens after widget tree is built
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -231,12 +224,12 @@ class _MyAppState extends State<MyApp> {
         try {
           print('🛣️ onGenerateRoute called');
           print('🛣️ Route name: ${settings.name}');
-          
+
           if (settings.name == null || settings.name!.isEmpty) {
             print('🛣️ Route name is null/empty, returning null');
             return null;
           }
-          
+
           Uri uri = Uri.parse(settings.name!);
           print('🛣️ Parsed URI: $uri');
           print('🛣️ Path: ${uri.path}');
@@ -260,8 +253,10 @@ class _MyAppState extends State<MyApp> {
 
           // Handle just the postId directly (UUID format)
           // Check if the route name looks like a UUID (contains hyphens or is a long alphanumeric string)
-          if (settings.name!.startsWith('/') && uri.pathSegments.isNotEmpty && 
-              uri.pathSegments[0].length > 20) { // UUID is typically 36 chars with hyphens
+          if (settings.name!.startsWith('/') &&
+              uri.pathSegments.isNotEmpty &&
+              uri.pathSegments[0].length > 20) {
+            // UUID is typically 36 chars with hyphens
             final postId = uri.pathSegments[0];
             print('🛣️ Detected direct postId route: $postId');
             print('🛣️ Creating PostScreen with postId: $postId');
@@ -282,7 +277,7 @@ class _MyAppState extends State<MyApp> {
               settings: settings,
             );
           }
-          
+
           print('🛣️ No route matched for: ${settings.name}');
         } catch (e, stackTrace) {
           print('❌ Error in route generation: $e');

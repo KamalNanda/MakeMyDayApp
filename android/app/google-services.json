@@ -7,12 +7,25 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:874148686673:android:b9cbbe378c6b132c728170",
+        "mobilesdk_app_id": "1:874148686673:android:ace6cf59a017c033728170",
         "android_client_info": {
           "package_name": "com.makemyday.makemyday"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "874148686673-vskisrst5kedog1h06e1s3te7i3ofoep.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.makemyday.makemyday",
+            "certificate_hash": "4a5a2c204b72dfcdcdb0d8f0c2735fb1aadf1ab9"
+          }
+        },
+        {
+          "client_id": "874148686673-1mbq9qdabgd79feq91a0vg8ehcok6ai8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyABELFcfUYDXpTYNIKt8mBsw2vzGQyhE-s"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "874148686673-1mbq9qdabgd79feq91a0vg8ehcok6ai8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "874148686673-23fi578011et23d3208rqk74jrnak581.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.makemyday"
+              }
+            }
+          ]
         }
       }
     }

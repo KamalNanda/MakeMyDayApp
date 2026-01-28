@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:makemyday/utils/save_user_data_in_db.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,7 +16,51 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // For Android/iOS, rely on `android/app/google-services.json` for correct
+  // OAuth configuration (package name + SHA-1). Hardcoding `serverClientId`
+  // commonly causes misconfiguration issues and isn't required for Firebase Auth.
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+
+  static const _firebaseSettingsUrl =
+      'https://console.firebase.google.com/project/make-my-day-now/settings/general';
+
+  void _showDeveloperErrorDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Google Sign-In Fix'),
+        content: const SingleChildScrollView(
+          child: Text(
+            'DEVELOPER_ERROR usually means your app\'s SHA-1 is not in Firebase.\n\n'
+            '1. Tap "Open Firebase" below\n'
+            '2. Your apps → Android → Add fingerprint\n'
+            '3. Run: cd android && ./gradlew signingReport, then copy the debug SHA-1\n'
+            '4. Add it, download new google-services.json, replace android/app/google-services.json\n'
+            '5. Uninstall app, then: flutter clean && flutter run\n\n'
+            'See GOOGLE_SIGNIN_FIX.md for details.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Dismiss'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              try {
+                await launchUrl(
+                  Uri.parse(_firebaseSettingsUrl),
+                  mode: LaunchMode.externalApplication,
+                );
+              } catch (_) {}
+            },
+            child: const Text('Open Firebase'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> signInWithGoogle() async {
     try {
@@ -27,56 +74,100 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
 
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        if (mounted) Navigator.of(context).pop(); // Close loading dialog
+      // Try GoogleSignIn with error handling
+      try {
+        final googleUser = await _googleSignIn.signIn().timeout(
+          const Duration(seconds: 15),
+          onTimeout: () {
+            throw TimeoutException('Google Sign-In took too long');
+          },
+        );
+
+        if (googleUser == null) {
+          if (mounted) Navigator.of(context).pop();
+          print('User cancelled Google Sign-In');
+          return;
+        }
+
+        final googleAuth = await googleUser.authentication;
+
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithCredential(credential);
+
+        final user = userCredential.user;
+
+        if (user != null) {
+          print('✅ Logged in: ${user.displayName}');
+
+          // Save user data to database
+          var username = user.displayName;
+          var email = user.email;
+          var id = user.uid;
+
+          save_user_data_in_db({
+            "id": id,
+            "username": username,
+            "email": email,
+          }).catchError((error) {
+            print('Failed to save user data: $error');
+          });
+        }
+
+        // Close loading dialog
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }       on PlatformException catch (e) {
+        if (mounted) Navigator.of(context).pop(); // close loading
+        print('🔴 PlatformException: Code=${e.code}');
+        print('   Message: ${e.message}');
+        print('   Details: ${e.details}');
+
+        // ApiException 10: show fix dialog with "Open Firebase" action
+        if (e.code == 'sign_in_failed' &&
+            e.message?.contains('ApiException: 10') == true) {
+          print('⚠️ Error 10: DEVELOPER_ERROR');
+          print('   Fix: Add your app SHA-1 in Firebase → Project settings → Android → Add fingerprint');
+          if (mounted) {
+            _showDeveloperErrorDialog();
+          }
+          return;
+        }
+        if (e.code == 'sign_in_canceled') return;
+
+        String errorMessage = 'Sign-in failed. Please try again.';
+        if (e.code == 'network_error') {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
         return;
-      }
-
-      final googleAuth = await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential);
-
-      final user = userCredential.user;
-
-      if (user != null) {
-        print('✅ Logged in: ${user.displayName}');
-
-        // Save user data to database (don't await to avoid blocking)
-        var username = user.displayName;
-        var email = user.email;
-        var id = user.uid;
-
-        // Save user data in background - don't block on this
-        save_user_data_in_db({
-          "id": id,
-          "username": username,
-          "email": email,
-        }).catchError((error) {
-          print('Failed to save user data: $error');
-          // Continue anyway - user is already logged in
-        });
-      }
-
-      // Close loading dialog
-      if (mounted) {
-        Navigator.of(context).pop();
       }
     } catch (e) {
       // Close loading dialog if still open
       if (mounted) {
-        Navigator.of(context).pop();
+        try {
+          Navigator.of(context).pop();
+        } catch (_) {}
+
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error during sign-in: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }

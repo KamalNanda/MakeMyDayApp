@@ -4,10 +4,7 @@ import 'package:makemyday/screens/home/widgets/interactions/share_button.dart';
 import 'package:makemyday/screens/home/widgets/post/content.dart';
 import 'package:makemyday/screens/home/widgets/post/date_tag.dart';
 import 'package:makemyday/screens/home/widgets/post/image.dart';
-import 'package:makemyday/screens/home/widgets/post/video_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart'; // Import media kit for player
-import 'package:makemyday/utils/constants.dart' as globals;
 
 class NewsPost extends StatefulWidget {
   final PostModel post;
@@ -19,44 +16,10 @@ class NewsPost extends StatefulWidget {
 }
 
 class _NewsPostState extends State<NewsPost> {
-  Player? player; // Store the video player
-
   @override
   void initState() {
     super.initState();
     print('initState: ' + widget.post.toJson().toString());
-    if (widget.post.type == 'video') {
-      _initializePlayer();
-    }
-  }
-
-  void _initializePlayer() {
-    player = Player(); // Create new player
-    player!.open(Media(widget.post.media_url), play: true);
-  }
-
-  @override
-  void didUpdateWidget(covariant NewsPost oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    print('didUpdateWidget: ' + widget.post.toJson().toString());
-    // If the post changes, dispose old player and load new one
-    if (oldWidget.post.media_url != widget.post.media_url) {
-      _disposePlayer();
-      if (widget.post.type == 'video') {
-        _initializePlayer();
-      }
-    }
-  }
-
-  void _disposePlayer() {
-    player?.dispose();
-    player = null;
-  }
-
-  @override
-  void dispose() {
-    _disposePlayer(); // Ensure cleanup when widget is removed
-    super.dispose();
   }
 
   @override
@@ -73,23 +36,10 @@ class _NewsPostState extends State<NewsPost> {
           children: [
             SizedBox(
               height: MediaQuery.of(context).size.height,
-              child: Column(
-                children: [
-                  if (widget.post.type == 'news')
-                    ImageWidget(widget.post.media_url)
-                  else
-                    VideoWidget(
-                      widget.post.media_url,
-                      player!,
-                    ), // Pass the player
-                ],
-              ),
+              child: Column(children: [ImageWidget(widget.post.media_url)]),
             ),
             Positioned(
-              top:
-                  widget.post.type == 'news'
-                      ? 170
-                      : 170 + globals.video_widget_height_constant,
+              top: 170,
               left: 0,
               right: 0,
               child: SizedBox(
@@ -98,10 +48,7 @@ class _NewsPostState extends State<NewsPost> {
               ),
             ),
             Positioned(
-              top:
-                  widget.post.type == 'news'
-                      ? 145
-                      : 145 + globals.video_widget_height_constant,
+              top: 145,
               right: 80,
               child: LikeButton(
                 postId: widget.post.id,
@@ -111,25 +58,17 @@ class _NewsPostState extends State<NewsPost> {
               ),
             ),
             Positioned(
-              top:
-                  widget.post.type == 'news'
-                      ? 145
-                      : 145 + globals.video_widget_height_constant,
+              top: 145,
               left: 20,
               child: DateTag(widget.post.created_at),
             ),
             Positioned(
-              top:
-                  widget.post.type == 'news'
-                      ? 145
-                      : 145 + globals.video_widget_height_constant,
+              top: 145,
               right: 25,
               child: ShareButton(
                 widget.post.id,
                 widget.post.title,
-                widget.post.type != 'video'
-                    ? widget.post.media_url
-                    : 'https://ik.imagekit.io/hbj42mvqwv/openart-image_7Kcert0U_1738085355305_raw1-Photoroom_VDjL4DuHGf%20(1)_ucJm7C33z.png', // fallback for video
+                widget.post.media_url,
               ),
             ),
           ],
