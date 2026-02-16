@@ -1,4 +1,5 @@
 import 'package:makemyday/screens/home/widgets/news_post.dart';
+import 'package:makemyday/screens/home/utils/post_model.dart';
 import 'package:makemyday/utils/posts_state_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -58,6 +59,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return true;
+  }
+
+  void _onPostStateChanged(int postIndex, int likeCount, bool likedByYou) {
+    // Update the PostModel in the manager
+    final post = _postsManager.posts[postIndex];
+    final updatedPost = PostModel(
+      id: post.id,
+      title: post.title,
+      description: post.description,
+      tags: post.tags,
+      like_count: likeCount,
+      type: post.type,
+      external_url: post.external_url,
+      media_url: post.media_url,
+      created_at: post.created_at,
+      liked_by_you: likedByYou,
+    );
+    
+    // Update the posts list
+    _postsManager.updatePost(postIndex, updatedPost);
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _retry() {
@@ -245,7 +269,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 opacity: percentThresholdX.abs() > 0.1 ? 0.5 : 1,
                 child: Transform.scale(
                   scale: percentThresholdX.abs() > 0.1 ? 0.95 : 1,
-                  child: NewsPost(_postsManager.posts[index]),
+                  child: NewsPost(
+                    _postsManager.posts[index],
+                    postIndex: index,
+                    onStateChange: _onPostStateChanged,
+                  ),
                 ),
               );
             },

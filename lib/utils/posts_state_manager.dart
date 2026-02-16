@@ -147,6 +147,13 @@ class PostsStateManager {
     return currentIndex >= _posts.length - 3 && hasMorePosts && !_isLoadingMore;
   }
 
+  /// Update a specific post in the list
+  void updatePost(int index, PostModel updatedPost) {
+    if (index >= 0 && index < _posts.length) {
+      _posts[index] = updatedPost;
+    }
+  }
+
   /// Clear all data
   void clear() {
     _posts.clear();

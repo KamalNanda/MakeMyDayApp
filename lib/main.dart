@@ -219,6 +219,26 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(primarySwatch: Colors.teal),
       home: const AuthWrapper(),
 
+      // Clamp text scaling so text doesn't look too large on physical devices
+      // (e.g. when system "Large text" is on). Also scale down slightly on narrow screens.
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        final width = mediaQuery.size.width;
+        // Design width 390; on narrower phones scale down (e.g. 360 -> ~0.92)
+        final widthScale = (width / 390).clamp(0.88, 1.0);
+        final systemScaler = mediaQuery.textScaler.clamp(
+          minScaleFactor: 0.9,
+          maxScaleFactor: 1.2,
+        );
+        final effectiveScale = widthScale * systemScaler.scale(1.0);
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: TextScaler.linear(effectiveScale),
+          ),
+          child: child!,
+        );
+      },
+
       // Named route handling
       onGenerateRoute: (RouteSettings settings) {
         try {

@@ -2,11 +2,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:makemyday/screens/login/login_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatelessWidget {
   final User? user = FirebaseAuth.instance.currentUser;
 
   ProfileScreen({super.key});
+
+  Future<void> _openFeedbackForm(BuildContext context) async {
+    final Uri url = Uri.parse('https://forms.gle/KKNMG885Cq5sV6az5');
+    final bool launched = await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open feedback form')),
+      );
+    }
+  }
 
   void _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
@@ -103,6 +118,31 @@ class ProfileScreen extends StatelessWidget {
               ),
 
               const Spacer(),
+
+              // Feedback Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _openFeedbackForm(context),
+                  icon: const Icon(Icons.feedback, color: Colors.black),
+                  label: Text(
+                    "Provide your feedback",
+                    style: GoogleFonts.raleway(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.10),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
 
               // Logout Button
               SizedBox(

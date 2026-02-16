@@ -14,14 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "874148686673-2mp3ssfvfqgjegpkbso70bfovipq3s9s.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.makemyday.makemyday",
-            "certificate_hash": "093968bf47849aec112dd5af0211016c67ef40ba"
-          }
-        },
-        {
           "client_id": "874148686673-ob2blk6e20cdhf3mro0hopi32k4qogc5.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

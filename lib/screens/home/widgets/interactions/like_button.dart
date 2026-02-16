@@ -9,11 +9,13 @@ class LikeButton extends StatefulWidget {
   final int likeCount;
   final bool likedByYou;
   final VoidCallback? onLiked;
+  final Function(int, bool)? onStateChange; // Callback to notify parent of state changes
   const LikeButton({
     required this.postId,
     required this.likeCount,
     required this.likedByYou,
     this.onLiked,
+    this.onStateChange,
     Key? key,
   }) : super(key: key);
 
@@ -36,10 +38,14 @@ class _LikeButtonState extends State<LikeButton> {
   @override
   void didUpdateWidget(covariant LikeButton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    setState(() {
-      _likedByYou = widget.likedByYou;
-      _likeCount = widget.likeCount;
-    });
+    // Only update if the post ID changed (swiped to different post)
+    // Don't override local state if it's the same post
+    if (oldWidget.postId != widget.postId) {
+      setState(() {
+        _likedByYou = widget.likedByYou;
+        _likeCount = widget.likeCount;
+      });
+    }
   }
 
   Future<void> _likePost() async {
@@ -61,13 +67,18 @@ class _LikeButtonState extends State<LikeButton> {
           _likeCount += 1;
           _likedByYou = true;
         });
+        // Notify parent of state change
+        if (widget.onStateChange != null) {
+          widget.onStateChange!(_likeCount, _likedByYou);
+        }
         if (widget.onLiked != null) widget.onLiked!();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'] ?? 'Failed to like post')),
+          SnackBar(content: Text(response?['message'] ?? 'Failed to like post')),
         );
       }
     } catch (e) {
+      print('Error liking post: $e');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));

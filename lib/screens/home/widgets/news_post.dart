@@ -9,7 +9,9 @@ import 'package:flutter/material.dart';
 class NewsPost extends StatefulWidget {
   final PostModel post;
   final VoidCallback? onLiked;
-  const NewsPost(this.post, {this.onLiked, super.key});
+  final int? postIndex;
+  final Function(int, int, bool)? onStateChange;
+  const NewsPost(this.post, {this.onLiked, this.postIndex, this.onStateChange, super.key});
 
   @override
   _NewsPostState createState() => _NewsPostState();
@@ -55,6 +57,11 @@ class _NewsPostState extends State<NewsPost> {
                 likeCount: widget.post.like_count,
                 likedByYou: widget.post.liked_by_you ?? false,
                 onLiked: widget.onLiked,
+                onStateChange: widget.postIndex != null 
+                  ? (likeCount, likedByYou) {
+                      widget.onStateChange!(widget.postIndex!, likeCount, likedByYou);
+                    }
+                  : null,
               ),
             ),
             Positioned(
