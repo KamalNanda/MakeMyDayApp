@@ -1,40 +1,69 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:makemyday/utils/apiService.dart';
 import 'dart:io';
 
 // Background message handler (must be top-level function)
 @pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling background message: ${message.messageId}");
+  // Show local notification for background messages
+  await _showBackgroundNotification(message);
+}
+
+Future<void> _showBackgroundNotification(RemoteMessage message) async {
+  final notificationService = NotificationService();
+  await notificationService._showLocalNotification(message);
 }
 
 class NotificationService {
+  static final NotificationService _singleton = NotificationService._internal();
+
+  factory NotificationService() {
+    return _singleton;
+  }
+
+  NotificationService._internal();
+
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications = 
       FlutterLocalNotificationsPlugin();
-  
-  static const String serverUrl = 'https://your-api.com'; // Replace with your API
+  final ApiService _apiService = ApiService();
 
   Future<void> initialize() async {
+    print('🔔 Initializing Notification Service...');
+
     // Request permission (iOS)
     NotificationSettings settings = await _fcm.requestPermission(
       alert: true,
       badge: true,
       sound: true,
+      announcement: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
     );
 
+    print('📲 Notification permission status: ${settings.authorizationStatus}');
+
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
+      print('✅ User granted notification permission');
+    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      print('⚠️  User granted provisional notification permission');
+    } else {
+      print('❌ User denied notification permission');
     }
 
     // Initialize local notifications
     const AndroidInitializationSettings androidInit = 
         AndroidInitializationSettings('@mipmap/ic_launcher');
     
-    const DarwinInitializationSettings iosInit = 
-        DarwinInitializationSettings();
+    const DarwinInitializationSettings iosInit = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
     
     const InitializationSettings initSettings = InitializationSettings(
       android: androidInit,
@@ -42,19 +71,31 @@ class NotificationService {
     );
 
     await _localNotifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: (details) {
-        // Handle notification tap
-        _handleNotificationTap(details.payload);
+      settings: initSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
+        _handleNotificationResponse(notificationResponse.payload);
       },
+    );
+    
+    // Request permission for iOS
+    final iOSDetails = _localNotifications
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>();
+    await iOSDetails?.requestPermissions(
+      alert: true,
+      badge: true,
+      sound: true,
     );
 
     // Create Android notification channel
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel',
       'High Importance Notifications',
-      description: 'This channel is used for important notifications.',
+      description: 'This channel is used for important notifications from MakeMyDay.',
       importance: Importance.high,
+      enableLights: true,
+      enableVibration: true,
+      playSound: true,
     );
 
     await _localNotifications
@@ -63,34 +104,49 @@ class NotificationService {
         ?.createNotificationChannel(channel);
 
     // Set background message handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message in foreground!');
+      print('💬 Got a message in foreground!');
+      print('   Title: ${message.notification?.title}');
+      print('   Body: ${message.notification?.body}');
       _showLocalNotification(message);
     });
 
-    // Handle notification tap when app is in background
+    // Handle notification tap when app is in background/terminated
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification tapped!');
-      _handleNotificationTap(message.data['postId']);
+      print('👆 Notification tapped from background!');
+      _handleNotificationResponse(
+        message.data['post_id'] ?? message.data['postId'],
+      );
     });
 
     // Get FCM token and send to server
-    // On iOS, we need to wait for APNS token first
+    print('🔑 Getting FCM token...');
     if (Platform.isIOS) {
       await _waitForAPNSTokenAndGetFCMToken();
     } else {
-      // On Android, directly get FCM token
       await _getFCMToken();
     }
 
     // Listen for token refresh
-    _fcm.onTokenRefresh.listen(_sendTokenToServer);
+    _fcm.onTokenRefresh.listen((newToken) {
+      print('🔄 FCM token refreshed');
+      _sendTokenToServer(newToken);
+    });
+
+    print('✅ Notification Service initialized successfully');
   }
 
   Future<void> _showLocalNotification(RemoteMessage message) async {
+    final notification = message.notification;
+
+    if (notification == null) {
+      print('⚠️ No notification data found');
+      return;
+    }
+
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
@@ -98,80 +154,126 @@ class NotificationService {
       importance: Importance.high,
       priority: Priority.high,
       showWhen: true,
+      playSound: true,
+      enableLights: true,
+      enableVibration: true,
     );
 
-    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
 
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
 
+    final postId = message.data['post_id'] ?? message.data['postId'];
+    
     await _localNotifications.show(
-      message.hashCode,
-      message.notification?.title ?? 'New Post',
-      message.notification?.body ?? 'Check out the latest news!',
-      notificationDetails,
-      payload: message.data['postId'],
+      id: notification.hashCode,
+      title: notification.title ?? 'New Post',
+      body: notification.body ?? 'Check out the latest news!',
+      notificationDetails: notificationDetails,
+      payload: postId,
     );
+
+    print('✅ Local notification shown for post: $postId');
+  }
+
+  static void _notificationTapBackground(NotificationResponse notificationResponse) {
+    final postId = notificationResponse.payload;
+    print('📭 Background notification tapped with postId: $postId');
+  }
+
+  void _handleNotificationResponse(String? postId) {
+    print('📭 Handling notification response with postId: $postId');
+    
+    if (postId != null && postId.isNotEmpty) {
+      print('🚀 Should navigate to post: $postId');
+    }
   }
 
   Future<void> _sendTokenToServer(String token) async {
     try {
-      // Replace with your actual API endpoint
-      final response = await http.post(
-        Uri.parse('$serverUrl/api/fcm-token'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'token': token,
-          'userId': 'user_123', // Replace with actual user ID
-          'platform': 'android', // or 'ios'
-        }),
+      final user = FirebaseAuth.instance.currentUser;
+      
+      if (user == null) {
+        print('⚠️ No authenticated user found, skipping token save');
+        return;
+      }
+
+      print('📤 Sending FCM token to server...');
+      print('   Token preview: ${token.substring(0, 20)}...');
+      print('   User ID: ${user.uid}');
+
+      // obtain Firebase ID token for authorization
+      String? idToken;
+      try {
+        idToken = await user.getIdToken();
+      } catch (e) {
+        print('⚠️ Could not fetch ID token: $e');
+      }
+
+      final headers = <String, dynamic>{
+        if (idToken != null) 'Authorization': 'Bearer $idToken',
+      };
+
+      final response = await _apiService.postRequest(
+        "/mmd/v1/users/save-fcm-token",
+        {
+          'fcm_token': token,
+          'platform': Platform.isIOS ? 'ios' : 'android',
+          'device_name': _getDeviceName(),
+          'user_id': user.uid, // include explicit uid as fallback
+        },
+        headers: headers,
       );
 
-      if (response.statusCode == 200) {
-        print('Token sent to server successfully');
+      if (response != null && response['status'] == true) {
+        print('✅ FCM token saved to server successfully');
+      } else {
+        print('⚠️ Server returned error: ${response?['message']}');
       }
     } catch (e) {
-      print('Error sending token to server: $e');
+      print('❌ Error sending token to server: $e');
+      // Don't throw - allow app to continue even if token saving fails
     }
   }
 
   Future<void> _waitForAPNSTokenAndGetFCMToken() async {
-    // Wait for APNS token to be available (with retries)
+    print('⏳ Waiting for APNS token (iOS)...');
     String? apnsToken;
-    int maxRetries = 15; // Increased retries
+    int maxRetries = 15;
     int retryCount = 0;
     
     while (apnsToken == null && retryCount < maxRetries) {
       try {
         apnsToken = await _fcm.getAPNSToken();
         if (apnsToken != null) {
-          print('APNS token obtained: ${apnsToken.length > 20 ? apnsToken.substring(0, 20) + "..." : apnsToken}');
+          print('✅ APNS token obtained: ${apnsToken.substring(0, 20)}...');
           break;
         }
       } catch (e) {
-        print('Error getting APNS token (attempt ${retryCount + 1}): $e');
+        print('⚠️ Error getting APNS token (attempt ${retryCount + 1}): $e');
       }
       
       if (apnsToken == null) {
         retryCount++;
         if (retryCount < maxRetries) {
-          print('APNS token not available yet, retrying in 1 second... (${retryCount}/$maxRetries)');
+          print('   Retrying in 1 second... (${retryCount}/$maxRetries)');
           await Future.delayed(const Duration(seconds: 1));
         }
       }
     }
     
     if (apnsToken == null) {
-      print('Warning: APNS token not available after $maxRetries attempts.');
-      print('This may happen on iOS Simulator. FCM token will be requested anyway.');
-      // On simulator, APNS token is never available, but we can still try
-      // The error will be caught and handled gracefully
+      print('⚠️ APNS token not available after retries');
+      print('   (This is normal on iOS Simulator)');
     }
     
-    // Now try to get FCM token
-    // If APNS token is still null (e.g., on simulator), this will fail gracefully
     await _getFCMToken();
   }
 
@@ -179,23 +281,20 @@ class NotificationService {
     try {
       String? token = await _fcm.getToken();
       if (token != null) {
-        print('FCM token obtained successfully');
+        print('✅ FCM token obtained: ${token.substring(0, 20)}...');
         await _sendTokenToServer(token);
       } else {
-        print('FCM token is null');
+        print('❌ FCM token is null');
       }
     } catch (e) {
-      // Check if it's the APNS token error
       if (e.toString().contains('apns-token-not-set')) {
-        print('FCM token error: APNS token not set. This is normal on iOS Simulator.');
-        print('To test push notifications, use a physical iOS device.');
-        // Set up a listener to get token when APNS becomes available
+        print('ℹ️ APNS token not set (expected on Simulator)');
         _setupTokenRetryListener();
       } else {
-        print('Error getting FCM token: $e');
-        // On iOS, if it fails for other reasons, try again after a delay
+        print('❌ Error getting FCM token: $e');
+        
         if (Platform.isIOS) {
-          print('Retrying FCM token after delay...');
+          print('   Retrying after delay...');
           Future.delayed(const Duration(seconds: 3), () async {
             try {
               String? token = await _fcm.getToken();
@@ -203,9 +302,7 @@ class NotificationService {
                 await _sendTokenToServer(token);
               }
             } catch (retryError) {
-              if (!retryError.toString().contains('apns-token-not-set')) {
-                print('Error getting FCM token on retry: $retryError');
-              }
+              print('❌ Retry failed: $retryError');
             }
           });
         }
@@ -214,13 +311,11 @@ class NotificationService {
   }
 
   void _setupTokenRetryListener() {
-    // Listen for when APNS token becomes available
-    // This will trigger when the token is ready
     Future.delayed(const Duration(seconds: 5), () async {
       try {
         String? apnsToken = await _fcm.getAPNSToken();
         if (apnsToken != null) {
-          print('APNS token now available, getting FCM token...');
+          print('✅ APNS token now available, getting FCM token...');
           String? fcmToken = await _fcm.getToken();
           if (fcmToken != null) {
             await _sendTokenToServer(fcmToken);
@@ -232,11 +327,12 @@ class NotificationService {
     });
   }
 
-  void _handleNotificationTap(String? postId) {
-    if (postId != null) {
-      // Navigate to post detail screen
-      print('Navigate to post: $postId');
-      // Example: Navigator.push(context, MaterialPageRoute(...))
+  String _getDeviceName() {
+    if (Platform.isIOS) {
+      return 'iOS Device';
+    } else if (Platform.isAndroid) {
+      return 'Android Device';
     }
+    return 'Unknown Device';
   }
 }

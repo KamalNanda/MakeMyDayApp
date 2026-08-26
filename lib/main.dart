@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:async';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:makemyday/screens/login/auth_wrapper.dart';
@@ -8,9 +9,8 @@ import 'package:makemyday/screens/search/search.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:app_links/app_links.dart';
 import 'firebase_options.dart';
-// import 'package:makemyday/utils/notificationService.dart';
-
-void main() async {
+import 'package:makemyday/utils/notificationService.dart';
+void main() async { 
   // Set up global error handling
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
@@ -50,7 +50,16 @@ void main() async {
     return;
   }
 
-  // await NotificationService().initialize();
+  // Initialize push notifications
+  try {
+    print('🔔 Initializing push notifications...');
+    await NotificationService().initialize();
+    print('✅ Push notifications initialized successfully');
+  } catch (e, stackTrace) {
+    print('❌ Push notification initialization failed: $e');
+    print('Stack trace: $stackTrace');
+    // Continue even if notifications fail
+  }
 
   runApp(const MyApp());
 }

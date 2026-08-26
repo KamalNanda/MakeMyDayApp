@@ -24,10 +24,15 @@ class ApiService {
   // POST Request
   Future<dynamic> postRequest(
     String endpoint,
-    Map<String, dynamic> data,
-  ) async {
+    Map<String, dynamic> data, {
+    Map<String, dynamic>? headers,
+  }) async {
     try {
-      Response response = await _dio.post(endpoint, data: data);
+      Options? options;
+      if (headers != null) {
+        options = Options(headers: headers);
+      }
+      Response response = await _dio.post(endpoint, data: data, options: options);
       return response.data;
     } catch (e) {
       _handleError(e);
