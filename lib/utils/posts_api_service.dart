@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:makemyday/screens/home/utils/post_model.dart';
@@ -11,6 +13,27 @@ class PostsApiService {
       headers: {"Content-Type": "application/json"},
     ),
   );
+
+  PostsApiService() {
+    // Prefer IPv4 where available by resolving host and rewriting the request
+    // to use the IPv4 address while preserving the original Host header.
+    _dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) async {
+      try {
+        final uri = options.uri;
+        final host = uri.host;
+        final addresses = await InternetAddress.lookup(host, type: InternetAddressType.IPv4);
+        if (addresses.isNotEmpty) {
+          final ip = addresses.first.address;
+          final newUri = uri.replace(host: ip);
+          options.headers['host'] = host;
+          options.path = newUri.toString();
+        }
+      } catch (e) {
+        // ignore
+      }
+      handler.next(options);
+    }));
+  }
 
   /// Fetch posts with pagination support
   /// [page] - Page number (default: 1)

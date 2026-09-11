@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:makemyday/screens/login/auth_wrapper.dart';
 import 'package:makemyday/screens/post/post_screen.dart';
 import 'package:makemyday/screens/search/search.dart';
+import 'package:makemyday/utils/navigation_key.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:app_links/app_links.dart';
 import 'firebase_options.dart';
@@ -224,6 +225,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MakeMyDay',
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.teal),
       home: const AuthWrapper(),

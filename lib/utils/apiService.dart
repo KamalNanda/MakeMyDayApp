@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 class ApiService {
@@ -10,6 +12,32 @@ class ApiService {
       headers: {"Content-Type": "application/json"},
     ),
   );
+
+  ApiService() {
+    // Interceptor to prefer IPv4 addresses when making requests. This rewrites
+    // the request URL to use the resolved IPv4 address and sets the original
+    // host in the Host header. This can fix issues where mobile networks
+    // have different DNS/IPv6 behavior compared to WiFi.
+    _dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) async {
+      try {
+        final uri = options.uri; // resolved uri (baseUrl + path)
+        final host = uri.host;
+        // Lookup IPv4 addresses for the host
+        final addresses = await InternetAddress.lookup(host, type: InternetAddressType.IPv4);
+        if (addresses.isNotEmpty) {
+          final ip = addresses.first.address;
+          final newUri = uri.replace(host: ip);
+          // Set Host header to original host so TLS/SNI and virtual hosting work
+          options.headers['host'] = host;
+          // Replace the path with an absolute URL pointing to the IP
+          options.path = newUri.toString();
+        }
+      } catch (e) {
+        // Ignore and let Dio use the original URL
+      }
+      handler.next(options);
+    }));
+  }
 
   // GET Request
   Future<dynamic> getRequest(String endpoint) async {

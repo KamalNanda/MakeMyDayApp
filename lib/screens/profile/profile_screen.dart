@@ -116,6 +116,34 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 12),
+               SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _logout(context),
+                  icon: const Icon(Icons.logout, color: Colors.black),
+                  label: Text(
+                    "Logout",
+                    style: GoogleFonts.raleway(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.10),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      // side: const BorderSide(
+                      //   color: Color.fromARGB(255, 0, 0, 0),
+                      //   width: 1.2,
+                      // ),
+                    ),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+            
 
               const Spacer(),
 
@@ -142,36 +170,20 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 6),
+              Text('OR'),
+              Text(
+                "You can also email us your feedback at kamalnanda@makemydaynow.com",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.raleway(
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w600, 
+                ),
+              ),
               const SizedBox(height: 12),
 
               // Logout Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _logout(context),
-                  icon: const Icon(Icons.logout, color: Colors.black),
-                  label: Text(
-                    "Logout",
-                    style: GoogleFonts.raleway(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.10),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      // side: const BorderSide(
-                      //   color: Color.fromARGB(255, 0, 0, 0),
-                      //   width: 1.2,
-                      // ),
-                    ),
-                    elevation: 4,
-                  ),
-                ),
-              ),
-            ],
+             ],
           ),
         ),
       ),

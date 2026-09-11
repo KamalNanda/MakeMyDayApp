@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:makemyday/screens/Contact/contact_us_screen.dart';
 import 'package:makemyday/screens/profile/profile_screen.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:makemyday/screens/bookmarks/bookmarks.dart';
@@ -19,6 +20,7 @@ class _NavigationState extends State<Navigation> {
     {'page': HomeScreen(), 'title': 'Home'},
     {'page': BookmarksScreen(), 'title': 'Bookmarks'},
     {'page': ProfileScreen(), 'title': 'Profile'},
+    {'page': ContactUsScreen(), 'title': 'Contact Us'},
   ];
 
   int _selectedPageIndex = 1;
@@ -84,6 +86,11 @@ class _NavigationState extends State<Navigation> {
             SalomonBottomBarItem(
               icon: const Icon(Icons.account_circle_rounded),
               title: Text("Profile", style: GoogleFonts.raleway()),
+              selectedColor: const Color(0xFF47CAD2),
+            ),
+            SalomonBottomBarItem(
+              icon: const Icon(Icons.contact_support_rounded),
+              title: Text("Contact Us", style: GoogleFonts.raleway()),
               selectedColor: const Color(0xFF47CAD2),
             ),
           ],

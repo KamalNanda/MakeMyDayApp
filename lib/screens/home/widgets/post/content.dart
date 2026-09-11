@@ -63,6 +63,11 @@ class _ContentState extends State<Content> {
             // SizedBox(height: 20,),
             NewsTitle(widget.post.title),
             SizedBox(height: 8), // Spacing
+            Padding(
+              padding: const EdgeInsets.only(left: 20.0),
+              child: Text('Source: Good News Network'),
+            ),
+            SizedBox(height: 8), // Spacing
             if(widget.post.tags.isNotEmpty)
             Tags(widget.post.tags),
             SizedBox(height: 8), // Spacing

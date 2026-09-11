@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:makemyday/utils/save_user_data_in_db.dart';
+import 'package:makemyday/utils/navigation_key.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -69,6 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
         showDialog(
           context: context,
           barrierDismissible: false,
+          useRootNavigator: true,
           builder:
               (context) => const Center(child: CircularProgressIndicator()),
         );
@@ -84,7 +86,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (googleUser == null) {
-          if (mounted) Navigator.of(context).pop();
+          if (navigatorKey.currentState?.canPop() ?? false) {
+            navigatorKey.currentState!.pop();
+          }
           print('User cancelled Google Sign-In');
           return;
         }
@@ -119,11 +123,13 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         // Close loading dialog
-        if (mounted) {
-          Navigator.of(context).pop();
+        if (navigatorKey.currentState?.canPop() ?? false) {
+          navigatorKey.currentState!.pop();
         }
       }       on PlatformException catch (e) {
-        if (mounted) Navigator.of(context).pop(); // close loading
+        if (navigatorKey.currentState?.canPop() ?? false) {
+          navigatorKey.currentState!.pop();
+        }
         print('🔴 PlatformException: Code=${e.code}');
         print('   Message: ${e.message}');
         print('   Details: ${e.details}');
@@ -157,12 +163,13 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       // Close loading dialog if still open
-      if (mounted) {
+      if (navigatorKey.currentState?.canPop() ?? false) {
         try {
-          Navigator.of(context).pop();
+          navigatorKey.currentState!.pop();
         } catch (_) {}
+      }
 
-        // Show error message
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error during sign-in: ${e.toString()}'),
