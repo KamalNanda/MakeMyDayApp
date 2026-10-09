@@ -21,7 +21,7 @@ class NewsTitle extends StatelessWidget {
       child: Text(
         _newsTitle,
         style: GoogleFonts.inter(
-          fontSize: 26,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
           color: Colors.black,
           height: 1.3,

@@ -62,14 +62,14 @@ class _ContentState extends State<Content> {
           children: [
             // SizedBox(height: 20,),
             NewsTitle(widget.post.title),
-            SizedBox(height: 8), // Spacing
+            SizedBox(height: 4), // Spacing
             Padding(
               padding: const EdgeInsets.only(left: 20.0),
-              child: Text('Source: Good News Network'),
+              child: Text('Source: Good News Network', style: TextStyle(fontSize: 12)),
             ),
-            SizedBox(height: 8), // Spacing
+            // SizedBox(height: 8), // Spacing
             if(widget.post.tags.isNotEmpty)
-            Tags(widget.post.tags),
+            // Tags(widget.post.tags),
             SizedBox(height: 8), // Spacing
             if (widget.post.type == 'news')
               Divider(
@@ -79,7 +79,7 @@ class _ContentState extends State<Content> {
             SizedBox(height: 8), // Spacing
             Text(
               widget.post.description,
-              style: GoogleFonts.raleway(fontSize: 16, color: Colors.black),
+              style: GoogleFonts.raleway(fontSize: 14, color: Colors.black),
             ),
             SizedBox(height: 320),
           ],

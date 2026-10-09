@@ -92,7 +92,7 @@ class _TagState extends State<Tag> with SingleTickerProviderStateMixin {
                   ),
                 ],
               ),
-              padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -109,7 +109,7 @@ class _TagState extends State<Tag> with SingleTickerProviderStateMixin {
                     widget._tag,
                     style: GoogleFonts.inter(
                       color: Color(0xff6B5B4A),
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.2,
                     ),
